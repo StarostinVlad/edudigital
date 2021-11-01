@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import 'package:edudigital/constants.dart';
 import 'package:flutter/material.dart';
 
 import 'video.dart';
@@ -28,11 +29,12 @@ class MainScreen extends StatelessWidget {
           ),
         ],
       ),
+      backgroundColor: Colors.black54,
       body: ListView(
         children: [
           Container(
             height: 500,
-            margin: EdgeInsets.only(bottom: 50.0),
+            // margin: EdgeInsets.only(bottom: 50.0),
             child: Stack(children: [
               BackdropFilter(
                 filter: ui.ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
@@ -45,66 +47,97 @@ class MainScreen extends StatelessWidget {
             decoration: BoxDecoration(
               image: DecorationImage(
                 fit: BoxFit.cover,
-                image: NetworkImage(
-                    "https://image.shutterstock.com/z/stock-photo-smiling-bearded-african-man-using-laptop-at-home-while-sitting-the-wooden-table-male-hands-typing-573112123.jpg"),
+                image: AssetImage("background.jpg"),
               ),
             ),
           ),
           Container(
-            color: Colors.green,
-            margin: EdgeInsets.symmetric(vertical: 25.0, horizontal: 50.0),
-            padding: EdgeInsets.symmetric(horizontal: 250.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Container(
-                  width: 270,
-                  height: 480,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: NetworkImage(
-                          "https://image.shutterstock.com/image-photo/smiling-bearded-indian-businessman-working-600w-1945041148.jpg"),
+            margin: EdgeInsets.symmetric(horizontal: 50.0),
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.cover,
+                image: AssetImage("background.jpg"),
+              ),
+            ),
+            child: Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 270,
+                    height: 480,
+                    margin: EdgeInsets.only(left: 50.0),
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        fit: BoxFit.cover,
+                        image: NetworkImage(
+                            "https://image.shutterstock.com/image-photo/smiling-bearded-indian-businessman-working-600w-1945041148.jpg"),
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(50.0),
-                  child: Text(
-                    "Блок о том что это такое",
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              ],
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.all(50.0),
+                      child: Column(children: [
+                        Text(
+                          "Блок о том что это такое",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          Constants.lorem_ipsum,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontStyle: FontStyle.italic),
+                          textAlign: TextAlign.center,
+                        ),
+                      ]),
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
           Container(
-            color: Colors.red,
-            margin: EdgeInsets.symmetric(vertical: 25.0, horizontal: 50.0),
-            padding: EdgeInsets.symmetric(horizontal: 250.0),
+            color: Colors.white,
+            margin: EdgeInsets.symmetric(horizontal: 50.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Padding(
-                  padding: EdgeInsets.all(50.0),
-                  child: Text(
-                    "Блок о том для кого это",
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(50.0),
+                    child: Column(children: [
+                      Text(
+                        "Блок о том для кого это",
+                        style: TextStyle(
+                            fontSize: 24,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        Constants.lorem_ipsum,
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.center,
+                      ),
+                    ]),
                   ),
                 ),
                 Container(
                   width: 270,
                   height: 480,
+                  margin: EdgeInsets.only(right: 50.0),
                   decoration: BoxDecoration(
                     image: DecorationImage(
                       fit: BoxFit.cover,
@@ -117,9 +150,13 @@ class MainScreen extends StatelessWidget {
             ),
           ),
           Container(
-            color: Colors.green,
-            margin: EdgeInsets.symmetric(vertical: 25.0, horizontal: 50.0),
-            padding: EdgeInsets.symmetric(horizontal: 250.0),
+            margin: EdgeInsets.symmetric(horizontal: 50.0),
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                fit: BoxFit.cover,
+                image: AssetImage("background.jpg"),
+              ),
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.start,
@@ -127,6 +164,7 @@ class MainScreen extends StatelessWidget {
                 Container(
                   width: 270,
                   height: 480,
+                  margin: EdgeInsets.only(left: 50.0),
                   decoration: BoxDecoration(
                     image: DecorationImage(
                       fit: BoxFit.cover,
@@ -135,15 +173,28 @@ class MainScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.all(50.0),
-                  child: Text(
-                    "Блок о том какая от этого польза",
-                    style: TextStyle(
-                        fontSize: 24,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(50.0),
+                    child: Column(children: [
+                      Text(
+                        "Блок о том какая от этого польза",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                      Text(
+                        Constants.lorem_ipsum,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontStyle: FontStyle.italic),
+                        textAlign: TextAlign.center,
+                      ),
+                    ]),
                   ),
                 )
               ],
@@ -154,19 +205,32 @@ class MainScreen extends StatelessWidget {
           ),
           Container(
             padding: EdgeInsets.all(50.0),
-            child: Text(
-              "Какая-то информация о нас",
-              style: TextStyle(
-                  fontSize: 24,
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
+            color: Theme.of(context).accentColor,
+            child: Column(children: [
+              Text(
+                "Какая-то информация о нас",
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              Text(
+                Constants.lorem_ipsum,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontStyle: FontStyle.italic),
+                textAlign: TextAlign.center,
+              ),
+            ]),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
+        backgroundColor: Theme.of(context).primaryColor,
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
