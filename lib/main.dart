@@ -1,5 +1,8 @@
+import 'package:edudigital/account_page.dart';
 import 'package:edudigital/main_screeen.dart';
 import 'package:flutter/material.dart';
+
+import 'login_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -24,7 +27,14 @@ class MyApp extends StatelessWidget {
         primaryColor: Color(0xfff2aa00),
         accentColor: Color(0xff282828),
       ),
-      home: MainScreen(),
+      initialRoute: '/account',
+      routes: {
+        // When navigating to the "/" route, build the FirstScreen widget.
+        '/': (context) => const MainScreen(),
+        // When navigating to the "/second" route, build the SecondScreen widget.
+        '/login': (context) => const LoginScreen(),
+        '/account': (context) => const AccountScreen(),
+      },
     );
   }
 }

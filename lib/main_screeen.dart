@@ -23,7 +23,9 @@ class MainScreen extends StatelessWidget {
             child: IconButton(
               color: Theme.of(context).primaryColor,
               iconSize: 40.0,
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pushNamed(context, "/login");
+              },
               icon: Icon(Icons.account_circle),
             ),
           ),
@@ -47,16 +49,15 @@ class MainScreen extends StatelessWidget {
             decoration: BoxDecoration(
               image: DecorationImage(
                 fit: BoxFit.cover,
-                image: AssetImage("background.jpg"),
+                image: AssetImage("assets/background.jpg"),
               ),
             ),
           ),
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 50.0),
             decoration: BoxDecoration(
               image: DecorationImage(
                 fit: BoxFit.cover,
-                image: AssetImage("background.jpg"),
+                image: AssetImage("assets/background.jpg"),
               ),
             ),
             child: Expanded(
@@ -106,7 +107,6 @@ class MainScreen extends StatelessWidget {
           ),
           Container(
             color: Colors.white,
-            margin: EdgeInsets.symmetric(horizontal: 50.0),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -150,11 +150,10 @@ class MainScreen extends StatelessWidget {
             ),
           ),
           Container(
-            margin: EdgeInsets.symmetric(horizontal: 50.0),
             decoration: BoxDecoration(
               image: DecorationImage(
                 fit: BoxFit.cover,
-                image: AssetImage("background.jpg"),
+                image: AssetImage("assets/background.jpg"),
               ),
             ),
             child: Row(
@@ -227,12 +226,6 @@ class MainScreen extends StatelessWidget {
             ]),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: Theme.of(context).primaryColor,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
