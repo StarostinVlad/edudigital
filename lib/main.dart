@@ -24,8 +24,10 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primaryColor: Color(0xfff2aa00),
-        accentColor: Color(0xff282828),
+        // primaryColor: Color(0xfff2aa00),
+        // accentColor: Color(0xff282828),
+        primaryColor: Colors.white,
+        accentColor: Colors.blueAccent,
       ),
       initialRoute: '/account',
       routes: {
