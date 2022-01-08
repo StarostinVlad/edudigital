@@ -91,7 +91,7 @@ class MainScreen extends StatelessWidget {
                           textAlign: TextAlign.center,
                         ),
                         Text(
-                          Constants.lorem_ipsum,
+                          Constants.greetings_for_student,
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 14,
@@ -124,7 +124,7 @@ class MainScreen extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       Text(
-                        Constants.lorem_ipsum,
+                        Constants.greetings_for_student,
                         style: TextStyle(
                             color: Colors.black,
                             fontSize: 14,
@@ -186,7 +186,7 @@ class MainScreen extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       Text(
-                        Constants.lorem_ipsum,
+                        Constants.greetings_for_student,
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -216,7 +216,7 @@ class MainScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               Text(
-                Constants.lorem_ipsum,
+                Constants.greetings_for_student,
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 14,

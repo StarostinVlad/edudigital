@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:edudigital/account_page.dart';
 import 'package:edudigital/main_screeen.dart';
 import 'package:flutter/material.dart';
@@ -27,15 +29,15 @@ class MyApp extends StatelessWidget {
         // primaryColor: Color(0xfff2aa00),
         // accentColor: Color(0xff282828),
         primaryColor: Colors.white,
-        accentColor: Colors.blueAccent,
+        accentColor: Colors.orangeAccent,
       ),
-      initialRoute: '/account',
+      initialRoute: '/',
       routes: {
-        // When navigating to the "/" route, build the FirstScreen widget.
-        '/': (context) => const MainScreen(),
-        // When navigating to the "/second" route, build the SecondScreen widget.
-        '/login': (context) => const LoginScreen(),
-        '/account': (context) => const AccountScreen(),
+        '/': (context) => const LoginScreen(),
+        '/main': (context) => const MainScreen(),
+        '/detail': (context) => const StudentDetailScreen(),
+        '/account': (context) =>
+            true ? TeacherScreen() : StudentScreen(),
       },
     );
   }
