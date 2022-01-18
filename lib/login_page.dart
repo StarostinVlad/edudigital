@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'account_page.dart';
+import 'main.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -14,13 +15,7 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).accentColor,
-          title: Text(
-            'EduDigital',
-            style: TextStyle(color: Theme.of(context).primaryColor),
-          ),
-        ),
+
         backgroundColor: Colors.black54,
         body: Container(
           width: MediaQuery.of(context).size.width,
@@ -121,10 +116,13 @@ class LoginContent extends StatelessWidget {
       child: Column(
         children: [
           Align(
-            child: CustomText(
-              'Курсы',
-              color: Colors.blue,
-              padding: 5.0,
+            child: TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, RoutesName.demoScreen);
+              },
+              child: Text(
+                'Курсы',
+              ),
             ),
             alignment: Alignment.centerLeft,
           ),
@@ -159,7 +157,7 @@ class _LoginFormState extends State<LoginForm> {
   final loginForm = GlobalKey<FormState>();
 
   String? _password;
-  late bool _enabled;
+  late bool _enabled, _isObscure = true;
 
   String? _login;
 
@@ -203,7 +201,7 @@ class _LoginFormState extends State<LoginForm> {
               errorText: _errorMsg,
               hintText: 'Введите логин',
               suffixIcon: Icon(
-                Icons.account_circle,
+                Icons.alternate_email,
                 color: Theme.of(context).accentColor,
               ),
             ),
@@ -215,7 +213,7 @@ class _LoginFormState extends State<LoginForm> {
             enabled: _enabled,
             initialValue: 'Aa111111',
             onSaved: (input) => _password = input,
-            obscureText: true,
+            obscureText: _isObscure,
             enableSuggestions: false,
             autocorrect: false,
             validator: (value) {
@@ -228,9 +226,16 @@ class _LoginFormState extends State<LoginForm> {
               focusColor: Theme.of(context).accentColor,
               border: OutlineInputBorder(),
               errorText: _errorMsg,
-              suffixIcon: Icon(
-                Icons.lock,
-                color: Theme.of(context).accentColor,
+              suffixIcon: IconButton(
+                onPressed: () {
+                  setState(() {
+                    _isObscure = !_isObscure;
+                  });
+                },
+                icon: Icon(
+                  _isObscure ? Icons.visibility : Icons.visibility_off,
+                  color: Theme.of(context).accentColor,
+                ),
               ),
               hintText: 'Введите пароль',
             ),
@@ -241,9 +246,16 @@ class _LoginFormState extends State<LoginForm> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
               RememberMe(),
-              CustomText(
-                'Забыли пароль?',
-                color: Theme.of(context).accentColor,
+              TextButton(
+                onPressed: () {
+                  showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) => ForgetPassword());
+                },
+                child: CustomText(
+                  'Забыли пароль?',
+                  color: Theme.of(context).accentColor,
+                ),
               )
             ])),
         Container(
@@ -261,20 +273,28 @@ class _LoginFormState extends State<LoginForm> {
                   _enabled = false;
                 });
                 print('$_login $_password');
-                Constants.isStudent = Random().nextBool();
-                print(Constants.isStudent);
-                Navigator.popAndPushNamed(context, "/account");
-                // UserAgentClient.auth(_login!, _password!).then((value) {
-                //   print(value);
-                //   Constants.isStudent = false;
-                //   if (value=='Администратор')
-                //     Navigator.popAndPushNamed(context, "/account");
-                //   else
-                //     setState(() {
-                //       _enabled = true;
-                //       _errorMsg = "Неверный email или пароль";
-                //     });
-                // });
+                // Constants.isStudent = Random().nextBool();
+                // print(Constants.isStudent);
+                // Navigator.popAndPushNamed(
+                //     context,
+                //     Constants.isStudent
+                //         ? RoutesName.teacher
+                //         : RoutesName.student);
+                UserAgentClient.auth(_login!, _password!).then((value) {
+                  print(value);
+                  Constants.isStudent = false;
+                  if (value=='Студент')
+                    Navigator.popAndPushNamed(context, "/student");
+                  if (value=='Учитель')
+                    Navigator.popAndPushNamed(context, "/teacher");
+                  if (value=='Администратор')
+                    Navigator.popAndPushNamed(context, "/admin");
+                  else
+                    setState(() {
+                      _enabled = true;
+                      _errorMsg = "Неверный email или пароль";
+                    });
+                });
               }
             },
           ),
@@ -307,6 +327,70 @@ class _RememberMeState extends State<RememberMe> {
           },
         ),
         Text('Запомнить меня'),
+      ],
+    );
+  }
+}
+
+class ForgetPassword extends StatefulWidget {
+  const ForgetPassword({Key? key}) : super(key: key);
+
+  @override
+  _ForgetPasswordState createState() => _ForgetPasswordState();
+}
+
+class _ForgetPasswordState extends State<ForgetPassword> {
+  var _emailController = TextEditingController();
+
+  String? _emailError;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Забыли пароль?'),
+      content: Form(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    errorText: _emailError,
+                    focusColor: Theme.of(context).accentColor,
+                    border: OutlineInputBorder(),
+                    hintText: 'Введите email',
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'Cancel'),
+          child: const Text('Отмена'),
+        ),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _emailError = null;
+            });
+            if (!_emailController.text.isValidEmail()) {
+              setState(() {
+                _emailError = "Не корректный email";
+              });
+            }
+            if (_emailError == null) {
+              UserAgentClient.forgetPassword(_emailController.text)
+                  .then((value) => Navigator.pop(context, 'OK'));
+            }
+          },
+          child: const Text('OK'),
+        ),
       ],
     );
   }

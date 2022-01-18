@@ -1,5 +1,5 @@
 class Constants {
-  static const String BASE_URL = "http://10.81.16.189:80";
+  static const String BASE_URL = "http://10.81.17.95:80";
   static const String greetings_for_student = """Привет, %name%!
 
   Мы рады приветствовать тебя на платформе, которая покажет насколько ты готов к своей

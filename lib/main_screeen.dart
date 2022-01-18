@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:edudigital/constants.dart';
 import 'package:flutter/material.dart';
 
+import 'main.dart';
 import 'video.dart';
 
 class MainScreen extends StatelessWidget {
@@ -24,7 +25,7 @@ class MainScreen extends StatelessWidget {
               color: Theme.of(context).primaryColor,
               iconSize: 40.0,
               onPressed: () {
-                Navigator.pushNamed(context, "/login");
+                Navigator.pushNamed(context, RoutesName.home);
               },
               icon: Icon(Icons.account_circle),
             ),

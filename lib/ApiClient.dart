@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:edudigital/constants.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 
 class UserAgentClient extends http.BaseClient {
@@ -25,7 +28,7 @@ class UserAgentClient extends http.BaseClient {
 
   static Future<String> available() async {
     final response =
-        await http.get(Uri.parse(Constants.BASE_URL + '/api/v1/groups'));
+        await http.get(Uri.parse(Constants.BASE_URL + '/api/v1/tests/available'));
 
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
@@ -52,6 +55,7 @@ class UserAgentClient extends http.BaseClient {
         "password": password
       }),
     );
+    print(response.headers);
 
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
@@ -98,10 +102,62 @@ class UserAgentClient extends http.BaseClient {
     }
   }
 
+  static Future<String?> uploadImage() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      Uint8List? fileBytes = result.files.first.bytes;
+      String fileName = result.files.first.name;
+
+      var postUri = Uri.parse(Constants.BASE_URL);
+      var request = new http.MultipartRequest("POST", postUri);
+      request.fields['user'] = 'blah';
+      request.files.add(new http.MultipartFile.fromBytes(fileName, fileBytes!));
+
+      request.send().then((response) {
+        if (response.statusCode == 200) print("Uploaded!");
+      });
+    }
+  }
+
+  static Future<String> forgetPassword(String login) async {
+    final response = await http.post(
+      Uri.parse(Constants.BASE_URL +
+          '/forgot'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        "Access-Control_Allow_Origin": "*"
+      },
+      body: jsonEncode(<String, String>{
+        // "email": "user6_email@mail.ru"
+        "email": login
+      }),
+    );
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      var json = jsonDecode(response.body);
+      return json['message']['role'];
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      return "error";
+    }
+  }
+
   Future<http.StreamedResponse> send(http.BaseRequest request) {
     request.headers['user-agent'] = userAgent;
     return _inner.send(request);
   }
 
-  static createGroup(String name, String count) {}
+  static createGroup(String name, String count) {
+    //todo createGroup
+  }
+
+  static sendRecomendation(String text) {
+    //todo sendRecomendation
+  }
 }

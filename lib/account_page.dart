@@ -1,13 +1,15 @@
 import 'dart:convert';
 import 'dart:html';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:edudigital/ApiClient.dart';
 import 'package:edudigital/constants.dart';
 import 'package:edudigital/login_page.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
+
+import 'main.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({Key? key, required this.height}) : super(key: key);
@@ -30,7 +32,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               onTap: () {
                 // UserAgentClient.logout();
                 // print(UserAgentClient.available());
-                Navigator.popAndPushNamed(context, "/");
+                Navigator.popAndPushNamed(context, RoutesName.home);
               },
             ),
           ),
@@ -126,6 +128,121 @@ class StudentScreen extends StatelessWidget {
   }
 }
 
+class Recomendation extends StatelessWidget {
+  const Recomendation({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Container(
+          height: 200,
+          child: Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(50)),
+                side: BorderSide(width: 2, color: Colors.purple)),
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Text(
+                '(Здесь сообщение от преподавателя)',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            ),
+          ),
+        ),
+        Container(
+          height: 200,
+          child: Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(100)),
+                side: BorderSide(width: 2, color: Colors.purple)),
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Text(
+                '(Здесь сообщение от преподавателя)',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            ),
+          ),
+        ),
+        Container(
+          height: 200,
+          child: Card(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(100)),
+                side: BorderSide(width: 2, color: Colors.purple)),
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Text(
+                '(Здесь сообщение от преподавателя)',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class StudentTrajectoryScreen extends StatefulWidget {
+  const StudentTrajectoryScreen({Key? key}) : super(key: key);
+
+  @override
+  _StudentTrajectoryScreenState createState() =>
+      _StudentTrajectoryScreenState();
+}
+
+class _StudentTrajectoryScreenState extends State<StudentTrajectoryScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: CustomAppBar(
+        height: 50,
+      ),
+      drawer: MediaQuery.of(context).size.width < 700
+          ? Drawer(
+              child: Menu(),
+            )
+          : null,
+      body: MediaQuery.of(context).size.width < 700
+          ? ListView(
+              children: [Flexible(child: StudentStatistic()), Recomendation()],
+            )
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(width: 200, child: Menu()),
+                Flexible(
+                  child: Column(
+                    children: [
+                      Container(
+                          height: 50,
+                          width: double.infinity,
+                          color: Colors.purple,
+                          child: CustomText(
+                            'Траектория Развития',
+                            fontSize: 32,
+                            color: Colors.white,
+                          )),
+                      Flexible(
+                        child: Row(
+                          children: [
+                            Flexible(child: StudentStatistic()),
+                            Recomendation()
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+}
+
 class StudentDetailScreen extends StatefulWidget {
   const StudentDetailScreen({Key? key}) : super(key: key);
 
@@ -147,7 +264,19 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
           : null,
       body: MediaQuery.of(context).size.width < 700
           ? ListView(
-              children: [Flexible(child: StudentStatistic()), Charts()],
+              children: [
+                Flexible(child: StudentStatistic()),
+                MaterialButton(
+                    color: Theme.of(context).accentColor,
+                    child: Text('Рекомендации студенту'),
+                    onPressed: () {
+                      showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              RecomendationDialog());
+                    }),
+                Charts()
+              ],
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -168,7 +297,23 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
                       Flexible(
                         child: Row(
                           children: [
-                            Flexible(child: StudentStatistic()),
+                            Flexible(
+                                child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                StudentStatistic(),
+                                MaterialButton(
+                                    color: Theme.of(context).accentColor,
+                                    child: Text('Рекомендации студенту'),
+                                    onPressed: () {
+                                      showDialog<String>(
+                                          context: context,
+                                          builder: (BuildContext context) =>
+                                              RecomendationDialog());
+                                    })
+                              ],
+                            )),
                             Charts()
                           ],
                         ),
@@ -179,6 +324,194 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
               ],
             ),
     );
+  }
+}
+
+class RecomendationDialog extends StatefulWidget {
+  const RecomendationDialog({Key? key}) : super(key: key);
+
+  @override
+  _RecomendationDialogState createState() => _RecomendationDialogState();
+}
+
+class _RecomendationDialogState extends State<RecomendationDialog> {
+  var _recomendationController = TextEditingController();
+
+  String? _recomendationError;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Center(child: Text('Форма подачи рекомендаций студенту')),
+      content: Form(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                    'Оставьте рекомендаци по дальнейшей работе для студента(он увидит их в личном кабинете).'),
+              ),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: _recomendationController,
+                  keyboardType: TextInputType.multiline,
+                  minLines: 5,
+                  maxLines: 10,
+                  decoration: InputDecoration(
+                    errorText: _recomendationError,
+                    focusColor: Theme.of(context).accentColor,
+                    border: OutlineInputBorder(),
+                    hintText: 'Адрес электронной почты',
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'Cancel'),
+          child: const Text('Отмена'),
+        ),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _recomendationError = null;
+            });
+
+            if (_recomendationController.text.isEmpty) {
+              setState(() {
+                _recomendationError = "Рекомендация не должна быть пустой";
+              });
+            }
+            if (_recomendationError == null) {
+              UserAgentClient.sendRecomendation(_recomendationController.text)
+                  .then((value) => Navigator.pop(context, 'Отправить'));
+            }
+          },
+          child: const Text('OK'),
+        ),
+      ],
+    );
+  }
+}
+
+class TestScreen extends StatefulWidget {
+  const TestScreen({Key? key}) : super(key: key);
+
+  @override
+  _TestScreenState createState() => _TestScreenState();
+}
+
+class _TestScreenState extends State<TestScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: CustomAppBar(
+        height: 50,
+      ),
+      drawer: MediaQuery.of(context).size.width < 700
+          ? Drawer(
+              child: Menu(),
+            )
+          : null,
+      body: MediaQuery.of(context).size.width < 700
+          ? Question()
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(width: 200, child: Menu()),
+                Flexible(child: Question()),
+              ],
+            ),
+    );
+  }
+}
+
+class Question extends StatefulWidget {
+  const Question({Key? key}) : super(key: key);
+
+  @override
+  _QuestionState createState() => _QuestionState();
+}
+
+class _QuestionState extends State<Question> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      Container(
+          height: 50,
+          width: double.infinity,
+          color: Colors.purple,
+          child: CustomText(
+            'Тестирование первого уровня',
+            fontSize: 32,
+            color: Colors.white,
+          )),
+      Padding(
+        padding: const EdgeInsets.all(40.0),
+        child: Center(
+            child: Text(
+          'Тут какой то очень прикольный вопрос',
+          style: Theme.of(context).textTheme.headline5,
+        )),
+      ),
+      Container(
+        padding: EdgeInsets.all(10.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            '1. Тут какой-то первый вариант ответа',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      Container(
+        padding: EdgeInsets.all(10.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            '2. Здесь второй вариант ответа',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      Container(
+        padding: EdgeInsets.all(10.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            '3. Здесь третий',
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      MaterialButton(
+        color: Theme.of(context).accentColor,
+        onPressed: () {},
+        child: Text('Далее'),
+      ),
+    ]);
+  }
+}
+
+class ChangeAvatar extends StatefulWidget {
+  const ChangeAvatar({Key? key}) : super(key: key);
+
+  @override
+  _ChangeAvatarState createState() => _ChangeAvatarState();
+}
+
+class _ChangeAvatarState extends State<ChangeAvatar> {
+  @override
+  Widget build(BuildContext context) {
+    return Container();
   }
 }
 
@@ -243,7 +576,7 @@ class _CreateGroupState extends State<CreateGroup> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.pop(context, 'Cancel'),
-          child: const Text('Cancel'),
+          child: const Text('Отмена'),
         ),
         TextButton(
           onPressed: () {
@@ -374,7 +707,7 @@ class _InviteStudentState extends State<InviteStudent> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.pop(context, 'Cancel'),
-          child: const Text('Cancel'),
+          child: const Text('Отмена'),
         ),
         TextButton(
           onPressed: () {
@@ -439,7 +772,7 @@ class TeacherContent extends StatelessWidget {
                             context: context,
                             builder: (BuildContext context) => InviteStudent());
                       } else {
-                        Navigator.popAndPushNamed(context, '/detail');
+                        Navigator.popAndPushNamed(context, RoutesName.detail);
                       }
                     },
                     child: e == 1
@@ -465,15 +798,17 @@ class StudentContent extends StatelessWidget {
   @override
   Widget build(context) => Container(
         padding: EdgeInsets.symmetric(vertical: 5.0),
-        child: ListView(
-          shrinkWrap: true,
+        child: Column(
           children: [1, 2, 3, 4].map((e) {
             return e != 4
                 ? EduProgressLevel(level: e, isOpen: e != 3)
                 : Padding(
                     padding: EdgeInsets.symmetric(horizontal: 5.0),
                     child: MaterialButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.popAndPushNamed(
+                            context, RoutesName.trajectory);
+                      },
                       color: Theme.of(context).accentColor,
                       child: CustomText("Траектория"),
                     ),
@@ -520,16 +855,86 @@ class Level extends StatelessWidget {
         Padding(
           padding: EdgeInsets.all(10.0),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              CustomText('1', padding: 5.0, color: Colors.black),
-              Expanded(
-                  child: CustomText('2', padding: 5.0, color: Colors.black)),
-              CustomText('3', padding: 5.0, color: Colors.black),
+              AccessLevel('1'),
+              AccessLevel('2'),
+              AccessLevel('3'),
             ],
           ),
         )
       ],
     ));
+  }
+}
+
+class AccessLevel extends StatefulWidget {
+  final String title;
+
+  const AccessLevel(this.title, {Key? key}) : super(key: key);
+
+  @override
+  _AccessLevelState createState() => _AccessLevelState();
+}
+
+class _AccessLevelState extends State<AccessLevel> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(5.0),
+      child: MaterialButton(
+        color: Theme.of(context).accentColor,
+        onPressed: () {
+          showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => AccessLevelDialog());
+        },
+        child: Text(
+          widget.title,
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+}
+
+class AccessLevelDialog extends StatefulWidget {
+  const AccessLevelDialog({Key? key}) : super(key: key);
+
+  @override
+  _AccessLevelDialogState createState() => _AccessLevelDialogState();
+}
+
+class _AccessLevelDialogState extends State<AccessLevelDialog> {
+  var _nameController = TextEditingController();
+  var _surnameController = TextEditingController();
+
+  String? _nameError, _surnameError;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Предоставить доступ к уровню?'),
+      content: Form(
+        child: Text(''),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'Cancel'),
+          child: const Text('Отменить'),
+        ),
+        TextButton(
+          onPressed: () {
+            if (_surnameError == null && _nameError == null) {
+              UserAgentClient.createGroup(
+                      _nameController.text, _surnameController.text)
+                  .then((value) => Navigator.pop(context, 'OK'));
+            }
+          },
+          child: const Text('Предоставить'),
+        ),
+      ],
+    );
   }
 }
 
@@ -593,10 +998,6 @@ class StudentStatistic extends StatelessWidget {
           Text('Коммуникационные: -'),
           Text('Инициативность: -'),
           Text('Ответственность: -'),
-          MaterialButton(
-              color: Theme.of(context).accentColor,
-              child: Text('Рекомендации студенту'),
-              onPressed: () {})
         ],
       ),
     );
@@ -616,6 +1017,12 @@ class Charts extends StatelessWidget {
     "кв.3": 4,
     "кв.4": 3,
   };
+  Map<String, double> level3 = {
+    "кв.1": 3,
+    "кв.2": 2,
+    "кв.3": 4,
+    "кв.4": 3,
+  };
 
   @override
   Widget build(context) => Column(
@@ -624,15 +1031,21 @@ class Charts extends StatelessWidget {
         children: [
           Text('Уровень 1'),
           SizedBox(
-            height: 300.0,
-            width: 300.0,
+            height: 200.0,
+            width: 200.0,
             child: PieChart(dataMap: level1),
           ),
           Text('Уровень 2'),
           SizedBox(
-            height: 300.0,
-            width: 300.0,
+            height: 200.0,
+            width: 200.0,
             child: PieChart(dataMap: level2),
+          ),
+          Text('Уровень 3'),
+          SizedBox(
+            height: 200.0,
+            width: 200.0,
+            child: PieChart(dataMap: level3),
           ),
         ],
       );
@@ -658,7 +1071,14 @@ class CustomText extends StatelessWidget {
       {this.padding = 0.0, this.color = Colors.white, this.fontSize = 14.0});
 }
 
-class TeacherMenu extends StatelessWidget {
+class TeacherMenu extends StatefulWidget {
+  @override
+  State<TeacherMenu> createState() => _TeacherMenuState();
+}
+
+class _TeacherMenuState extends State<TeacherMenu> {
+  String option1Text = "Мой профиль";
+
   @override
   Widget build(context) => Container(
         color: Theme.of(context).accentColor,
@@ -672,15 +1092,24 @@ class TeacherMenu extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(top: 20.0),
                 child: Center(
-                  child: CustomText("Мой профиль"),
+                  // child: CustomText("Мой профиль"),
+                  child: CustomText(option1Text),
                 ),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 50.0),
-                child: Icon(
-                  Icons.account_circle,
-                  color: Colors.white,
-                  size: 50.0,
+                child: IconButton(
+                  onPressed: () {
+                    UserAgentClient.uploadImage();
+                    // showDialog<String>(
+                    //     context: context,
+                    //     builder: (BuildContext context) => ChangeAvatar());
+                  },
+                  icon: Icon(
+                    Icons.account_circle,
+                    color: Colors.white,
+                    size: 50.0,
+                  ),
                 ),
               ),
               Center(
@@ -694,7 +1123,7 @@ class TeacherMenu extends StatelessWidget {
                 child: ListView(shrinkWrap: true, children: [
                   MaterialButton(
                     onPressed: () {
-                      Navigator.popAndPushNamed(context, "/account");
+                      Navigator.popAndPushNamed(context, RoutesName.teacher);
                     },
                     child: ListTile(
                       title: CustomText(
@@ -705,7 +1134,7 @@ class TeacherMenu extends StatelessWidget {
                   ),
                   MaterialButton(
                     onPressed: () {
-                      Navigator.popAndPushNamed(context, "/account");
+                      Navigator.popAndPushNamed(context, RoutesName.teacher);
                     },
                     child: ListTile(
                       title: CustomText(
@@ -790,7 +1219,10 @@ class Menu extends StatelessWidget {
               ),
               SizedBox(height: 100.0),
               MaterialButton(
-                onPressed: () {},
+                onPressed: () {
+                  UserAgentClient.available().then((value) => null);
+                  Navigator.popAndPushNamed(context, RoutesName.student);
+                },
                 child: ListTile(
                   title: CustomText(
                     "Мои компетенции",
@@ -877,19 +1309,25 @@ class EduProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-      child: Row(children: [
-        Expanded(
-          child: LinearProgressIndicator(
-            backgroundColor: Colors.grey,
-            valueColor:
-                AlwaysStoppedAnimation<Color>(checkColor(this.progress)),
-            value: this.progress / 100,
+    return MaterialButton(
+      onPressed: () {
+        Navigator.popAndPushNamed(context, RoutesName.testScreen);
+      },
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
+        child: Row(children: [
+          Expanded(
+            child: LinearProgressIndicator(
+              backgroundColor: Colors.grey,
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(checkColor(this.progress)),
+              value: this.progress / 100,
+            ),
           ),
-        ),
-        Padding(padding: EdgeInsets.all(5.0), child: Text('${this.progress}%'))
-      ]),
+          Padding(
+              padding: EdgeInsets.all(5.0), child: Text('${this.progress}%'))
+        ]),
+      ),
     );
   }
 
