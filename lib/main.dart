@@ -9,6 +9,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'invite_screen.dart';
 import 'login_page.dart';
 
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   setUrlStrategy(PathUrlStrategy());
@@ -46,7 +47,8 @@ class MyApp extends StatelessWidget {
         // primaryColor: Color(0xfff2aa00),
         // accentColor: Color(0xff282828),
         primaryColor: Colors.white,
-        accentColor: Colors.red,
+        accentColor: Color(0xff1800A2),
+        fontFamily: 'arialblack',
       ),
       // initialRoute: RoutesName.home,
       // routes: {

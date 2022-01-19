@@ -67,18 +67,20 @@ class TeacherScreen extends StatelessWidget {
                   Flexible(
                     child: Column(
                       children: [
-                        Container(
-                            height: 50,
-                            width: double.infinity,
-                            color: Colors.purple,
-                            child: CustomText(
-                              'Инструкция к работе',
-                              fontSize: 32,
-                              color: Colors.white,
-                            )),
+                        MaterialButton(
+                          onPressed: () {},
+                          minWidth: double.infinity,
+                          color: Colors.deepPurple,
+                          child: CustomText(
+                            'Инструкция к работе',
+                            fontSize: 32,
+                            color: Colors.white,
+                          ),
+                        ),
                         Flexible(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Flexible(child: TeacherContent()),
                               Flexible(child: GroupsList()),
@@ -112,16 +114,42 @@ class StudentScreen extends StatelessWidget {
       body: SafeArea(
         child: MediaQuery.of(context).size.width > 700
             ? Row(
-                children: [
-                  Container(width: 200, child: Menu()),
-                  Container(
-                      width: (MediaQuery.of(context).size.width - 200) * 0.5,
-                      child: StudentContent()),
-                  Container(
-                      width: (MediaQuery.of(context).size.width - 200) * 0.5,
-                      child: Greetings())
-                ],
-              )
+              children: [
+                Container(width: 200, child: Menu()),
+                Flexible(
+                  child: Column(
+                    children: [
+                      MaterialButton(
+                        onPressed: () {},
+                        minWidth: double.infinity,
+                        color: Colors.deepPurple,
+                        child: CustomText(
+                          'SoftSkills',
+                          fontSize: 32,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Flexible(
+                        child: Row(
+                          children: [
+                            Container(
+                                width: (MediaQuery.of(context).size.width -
+                                        200) *
+                                    0.5,
+                                child: StudentContent()),
+                            Container(
+                                width: (MediaQuery.of(context).size.width -
+                                        200) *
+                                    0.5,
+                                child: Greetings())
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            )
             : ListView(children: [Greetings(), StudentContent()]),
       ),
     );
@@ -208,7 +236,19 @@ class _StudentTrajectoryScreenState extends State<StudentTrajectoryScreen> {
           : null,
       body: MediaQuery.of(context).size.width < 700
           ? ListView(
-              children: [Flexible(child: StudentStatistic()), Recomendation()],
+              children: [
+                Container(
+                  height: 50,
+                  width: double.infinity,
+                  color: Colors.purple,
+                  child: CustomText(
+                    'Траектория Развития',
+                    fontSize: 32,
+                    color: Colors.white,
+                  ),
+                ),
+                Flexible(child: StudentStatistic()),
+              ],
             )
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -218,21 +258,18 @@ class _StudentTrajectoryScreenState extends State<StudentTrajectoryScreen> {
                   child: Column(
                     children: [
                       Container(
-                          height: 50,
-                          width: double.infinity,
-                          color: Colors.purple,
-                          child: CustomText(
-                            'Траектория Развития',
-                            fontSize: 32,
-                            color: Colors.white,
-                          )),
-                      Flexible(
-                        child: Row(
-                          children: [
-                            Flexible(child: StudentStatistic()),
-                            Recomendation()
-                          ],
+                        height: 50,
+                        width: double.infinity,
+                        color: Colors.purple,
+                        child: CustomText(
+                          'Траектория Развития',
+                          fontSize: 32,
+                          color: Colors.white,
                         ),
+                      ),
+                      Flexible(
+                        flex: 1,
+                        child: StudentStatistic(),
                       ),
                     ],
                   ),
@@ -263,21 +300,7 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
             )
           : null,
       body: MediaQuery.of(context).size.width < 700
-          ? ListView(
-              children: [
-                Flexible(child: StudentStatistic()),
-                MaterialButton(
-                    color: Theme.of(context).accentColor,
-                    child: Text('Рекомендации студенту'),
-                    onPressed: () {
-                      showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) =>
-                              RecomendationDialog());
-                    }),
-                Charts()
-              ],
-            )
+          ? TeacherStatistic()
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -295,28 +318,7 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
                             color: Colors.white,
                           )),
                       Flexible(
-                        child: Row(
-                          children: [
-                            Flexible(
-                                child: Column(
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                StudentStatistic(),
-                                MaterialButton(
-                                    color: Theme.of(context).accentColor,
-                                    child: Text('Рекомендации студенту'),
-                                    onPressed: () {
-                                      showDialog<String>(
-                                          context: context,
-                                          builder: (BuildContext context) =>
-                                              RecomendationDialog());
-                                    })
-                              ],
-                            )),
-                            Charts()
-                          ],
-                        ),
+                        child: TeacherStatistic(),
                       ),
                     ],
                   ),
@@ -366,7 +368,7 @@ class _RecomendationDialogState extends State<RecomendationDialog> {
                     errorText: _recomendationError,
                     focusColor: Theme.of(context).accentColor,
                     border: OutlineInputBorder(),
-                    hintText: 'Адрес электронной почты',
+                    hintText: 'Рекомендаци по дальнейшей работе',
                   ),
                 ),
               ),
@@ -375,6 +377,10 @@ class _RecomendationDialogState extends State<RecomendationDialog> {
         ),
       ),
       actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'Cancel'),
+          child: const Text('Связаться с менеджером'),
+        ),
         TextButton(
           onPressed: () => Navigator.pop(context, 'Cancel'),
           child: const Text('Отмена'),
@@ -761,8 +767,7 @@ class TeacherContent extends StatelessWidget {
   @override
   Widget build(context) => Padding(
         padding: EdgeInsets.all(5.0),
-        child: ListView(
-            shrinkWrap: true,
+        child: Column(
             children: [1, 2, 3, 4]
                 .map(
                   (e) => MaterialButton(
@@ -798,7 +803,8 @@ class StudentContent extends StatelessWidget {
   @override
   Widget build(context) => Container(
         padding: EdgeInsets.symmetric(vertical: 5.0),
-        child: Column(
+        child: ListView(
+          shrinkWrap: true,
           children: [1, 2, 3, 4].map((e) {
             return e != 4
                 ? EduProgressLevel(level: e, isOpen: e != 3)
@@ -822,18 +828,18 @@ class GroupsList extends StatelessWidget {
   @override
   Widget build(context) => Padding(
         padding: EdgeInsets.all(5.0),
-        child: ListView(
-            shrinkWrap: true,
-            children: [1, 2, 3, 4]
-                .map((e) => e == 1
-                    ? CustomText(
-                        'Группа 00$e',
-                        color: Colors.black,
-                        padding: 15.0,
-                        fontSize: 18.0,
-                      )
-                    : Level(e))
-                .toList()),
+        child: Column(children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Группа 001',
+              style: Theme.of(context).textTheme.headline5,
+            ),
+          ),
+          Level(1),
+          Level(2),
+          Level(3),
+        ]),
       );
 }
 
@@ -955,6 +961,36 @@ class Greetings extends StatelessWidget {
       );
 }
 
+class TeacherStatistic extends StatelessWidget {
+  const TeacherStatistic({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.0),
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          TeacherStatisticItem(level: 1, isOpen: true),
+          TeacherStatisticItem(level: 2, isOpen: true),
+          TeacherStatisticItem(level: 3, isOpen: false),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: MaterialButton(
+                color: Theme.of(context).accentColor,
+                child: CustomText('Дать рекомендации студентам'),
+                onPressed: () {
+                  showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) => RecomendationDialog());
+                }),
+          )
+        ],
+      ),
+    );
+  }
+}
+
 class StudentStatistic extends StatelessWidget {
   const StudentStatistic({Key? key}) : super(key: key);
 
@@ -962,44 +998,263 @@ class StudentStatistic extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: ListView(
         children: [
-          CustomText(
+          Text(
             'Результаты по отдельным компетенциям',
-            fontSize: 20,
-            color: Colors.black,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.headline4,
           ),
-          CustomText(
-            '1 уровень: 54% (Базовый)',
-            fontSize: 20,
-            color: Colors.black,
-          ),
-          Text('Технологические: 72% Продвинутый'),
-          Text('Коммуникационные: 83% Продвинутый'),
-          Text('Инициативность: 60% Базовый'),
-          Text('Ответственность: 60% Базовый'),
-          CustomText(
-            '2 уровень: 65% (Средний)',
-            fontSize: 20,
-            color: Colors.black,
-          ),
-          Text('Технологические: 72% Продвинутый'),
-          Text('Коммуникационные: 83% Продвинутый'),
-          Text('Инициативность: 60% Базовый'),
-          Text('Ответственность: 60% Базовый'),
-          CustomText(
-            '3 уровень: 76% (Закрыт)',
-            fontSize: 20,
-            color: Colors.black,
-          ),
-          Text('Технологические: -'),
-          Text('Коммуникационные: -'),
-          Text('Инициативность: -'),
-          Text('Ответственность: -'),
+          StudentStatisticItem(level: 1),
+          StudentStatisticItem(level: 2),
+          StudentStatisticItem(level: 3),
         ],
       ),
+    );
+  }
+}
+
+class StudentStatisticItem extends StatelessWidget {
+  final int level;
+
+  const StudentStatisticItem({Key? key, required this.level}) : super(key: key);
+
+  children(context) {
+    return [
+      Flexible(
+        flex: 2,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                '$level уровень: 54% (Базовый)',
+                style: Theme.of(context).textTheme.headline5,
+              ),
+            ),
+            Table(
+              border: TableBorder(
+                  verticalInside: BorderSide(
+                      width: 1, color: Colors.black, style: BorderStyle.solid)),
+              children: [
+                TableRow(
+                    children:
+                        row(context, type: 1, percent: Random().nextInt(100))),
+                TableRow(
+                    children:
+                        row(context, type: 2, percent: Random().nextInt(100))),
+                TableRow(
+                    children:
+                        row(context, type: 3, percent: Random().nextInt(100))),
+                TableRow(
+                    children:
+                        row(context, type: 4, percent: Random().nextInt(100))),
+              ],
+            ),
+          ],
+        ),
+      ),
+      Flexible(
+        flex: 1,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(width: 5, color: Colors.deepPurple),
+            ),
+            child: Padding(
+              padding: EdgeInsets.all(10),
+              child: Text(
+                '(Здесь сообщение от преподавателя)',
+                style: Theme.of(context).textTheme.headline6,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ];
+  }
+
+  row(context, {required int type, required int percent}) {
+    return [
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          type == 1
+              ? 'Инициативность:'
+              : type == 2
+                  ? 'Коммуникативность:'
+                  : type == 3
+                      ? 'Технологические:'
+                      : 'Ответственность:',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          '$percent%',
+          textAlign: ui.TextAlign.center,
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          percent < 65
+              ? 'Базовый'
+              : percent > 80
+                  ? 'Продвинутый'
+                  : 'Средний',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: MediaQuery.of(context).size.width <= 700
+          ? ListView(
+              shrinkWrap: true,
+              children: children(context),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: children(context),
+            ),
+    );
+  }
+}
+
+class TeacherStatisticItem extends StatelessWidget {
+  final int level;
+  final Map<String, double> levelStat = {
+    "кв.1": 5,
+    "кв.2": 3,
+    "кв.3": 2,
+    "кв.4": 2,
+  };
+  final bool isOpen;
+
+  final List<Color> greyList = [
+    Colors.grey,
+    Colors.grey,
+    Colors.grey,
+    Colors.grey
+  ];
+  final List<Color> colorList = [
+    Colors.redAccent,
+    Colors.greenAccent,
+    Colors.blueAccent,
+    Colors.yellowAccent
+  ];
+
+  TeacherStatisticItem({Key? key, required this.level, required this.isOpen})
+      : super(key: key);
+
+  children(context) {
+    return [
+      Flexible(
+        flex: 2,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                '$level уровень: 54% (Базовый)',
+                style: Theme.of(context).textTheme.headline5,
+              ),
+            ),
+            Table(
+              border: TableBorder(
+                  verticalInside: BorderSide(
+                      width: 1, color: Colors.black, style: BorderStyle.solid)),
+              children: [
+                TableRow(
+                    children:
+                        row(context, type: 1, percent: Random().nextInt(100))),
+                TableRow(
+                    children:
+                        row(context, type: 2, percent: Random().nextInt(100))),
+                TableRow(
+                    children:
+                        row(context, type: 3, percent: Random().nextInt(100))),
+                TableRow(
+                    children:
+                        row(context, type: 4, percent: Random().nextInt(100))),
+              ],
+            ),
+          ],
+        ),
+      ),
+      Flexible(
+          flex: 1,
+          child: SizedBox(
+            height: 250.0,
+            width: 250.0,
+            child: PieChart(
+              dataMap: levelStat,
+              colorList: isOpen ? colorList : greyList,
+            ),
+          )),
+    ];
+  }
+
+  row(context, {required int type, required int percent}) {
+    return [
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          type == 1
+              ? 'Инициативность:'
+              : type == 2
+                  ? 'Коммуникативность:'
+                  : type == 3
+                      ? 'Технологические:'
+                      : 'Ответственность:',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          '$percent%',
+          textAlign: ui.TextAlign.center,
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          percent < 65
+              ? 'Базовый'
+              : percent > 80
+                  ? 'Продвинутый'
+                  : 'Средний',
+          style: Theme.of(context).textTheme.headline6,
+        ),
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: MediaQuery.of(context).size.width <= 700
+          ? ListView(
+              shrinkWrap: true,
+              children: children(context),
+            )
+          : Row(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: children(context),
+            ),
     );
   }
 }
@@ -1319,6 +1574,7 @@ class EduProgressIndicator extends StatelessWidget {
           Expanded(
             child: LinearProgressIndicator(
               backgroundColor: Colors.grey,
+              minHeight: 15,
               valueColor:
                   AlwaysStoppedAnimation<Color>(checkColor(this.progress)),
               value: this.progress / 100,

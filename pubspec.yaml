@@ -58,6 +58,12 @@ flutter:
     - assets/menu_background4.jpg
     - assets/menu_background.png
     - assets/login_background.jpg
+    - assets/login_background2.png
+    - assets/EIKFU_logo.png
+  fonts:
+    - family: arialblack
+      fonts:
+        - asset: assets/fonts/arialblack.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

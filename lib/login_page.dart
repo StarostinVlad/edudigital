@@ -15,14 +15,13 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
         backgroundColor: Colors.black54,
         body: Container(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
           child: MediaQuery.of(context).size.width >= 700
               ? Container(
-                  padding: EdgeInsets.symmetric(vertical: 50.0),
+                  padding: EdgeInsets.only(top: 50.0),
                   color: Theme.of(context).primaryColor,
                   child: Row(children: [
                     Container(
@@ -32,40 +31,82 @@ class LoginScreen extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Container(
-                                  decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                          fit: BoxFit.fitHeight,
-                                          image: AssetImage(
-                                            'login_background.jpg',
-                                          ))),
-                                  child: Center(
-                                      child: Column(
-                                    children: [
-                                      Row(children: [
-                                        Container(
-                                            height: 50.0,
-                                            child: Image.asset('found.png')),
-                                        Expanded(
-                                          child: CustomText(
-                                              'Казанский федеральный университет\nЕлабужский институт'),
+                                decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                        fit: BoxFit.fitHeight,
+                                        image: AssetImage(
+                                          'login_background2.png',
+                                        ))),
+                                child: Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 40, vertical: 30),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(children: [
+                                          Container(
+                                              height: 75.0,
+                                              child: Image.asset(
+                                                  'EIKFU_logo.png')),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                CustomText(
+                                                  'Казанский федеральный',
+                                                  fontSize: 20,
+                                                ),
+                                                CustomText(
+                                                  'УНИВЕРСИТЕТ',
+                                                  fontSize: 20,
+                                                ),
+                                                CustomText(
+                                                  'Елабужский институт',
+                                                  fontSize: 20,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                          CustomText(
+                                            'EDU-IT',
+                                            fontSize: 52,
+                                          ),
+                                        ]),
+                                        SizedBox(
+                                          height: 250,
+                                        ),
+                                        Text(
+                                          'Система оценки',
+                                          textAlign: TextAlign.start,
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              fontSize: 46),
+                                        ),
+                                        Text(
+                                          'цифровых компетенций',
+                                          textAlign: TextAlign.start,
+                                          style: TextStyle(
+                                              color: Theme.of(context)
+                                                  .primaryColor,
+                                              fontSize: 46),
                                         ),
                                         CustomText(
-                                          'EDU-IT',
-                                          fontSize: 52,
+                                          'Онлайн-платформа для оценки и',
+                                          fontSize: 14,
                                         ),
-                                      ]),
-                                      SizedBox(
-                                        height: 100,
-                                      ),
-                                      CustomText(
-                                        'Система оценки цифровых компетенций',
-                                        fontSize: 46,
-                                      ),
-                                      CustomText(
-                                        'Онлайн-платформа для оценки и развития цифровой компетентности студентов педагогических направлений',
-                                      ),
-                                    ],
-                                  ))),
+                                        CustomText(
+                                          'развития цифровой компетентности студентов педагогических направлений',
+                                          fontSize: 14,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -264,7 +305,7 @@ class _LoginFormState extends State<LoginForm> {
           child: MaterialButton(
             height: 50.0,
             color: Theme.of(context).accentColor,
-            child: Text("Войти"),
+            child: CustomText("Войти"),
             onPressed: () {
               if (loginForm.currentState!.validate()) {
                 loginForm.currentState!.save();
@@ -283,11 +324,11 @@ class _LoginFormState extends State<LoginForm> {
                 UserAgentClient.auth(_login!, _password!).then((value) {
                   print(value);
                   Constants.isStudent = false;
-                  if (value=='Студент')
+                  if (value == 'Студент')
                     Navigator.popAndPushNamed(context, "/student");
-                  if (value=='Учитель')
+                  if (value == 'Учитель')
                     Navigator.popAndPushNamed(context, "/teacher");
-                  if (value=='Администратор')
+                  if (value == 'Администратор')
                     Navigator.popAndPushNamed(context, "/admin");
                   else
                     setState(() {

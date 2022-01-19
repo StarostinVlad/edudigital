@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:edudigital/constants.dart';
@@ -27,8 +28,8 @@ class UserAgentClient extends http.BaseClient {
   }
 
   static Future<String> available() async {
-    final response =
-        await http.get(Uri.parse(Constants.BASE_URL + '/api/v1/tests/available'));
+    final response = await http
+        .get(Uri.parse(Constants.BASE_URL + '/api/v1/tests/available'));
 
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,
@@ -42,6 +43,9 @@ class UserAgentClient extends http.BaseClient {
   }
 
   static Future<String> auth(String login, String password) async {
+    // return Random().nextBool() ? "Студент" : "Учитель";
+    // return "Учитель";
+    return "Студент";
     final response = await http.post(
       Uri.parse(Constants.BASE_URL + '/login'),
       headers: <String, String>{
@@ -122,8 +126,7 @@ class UserAgentClient extends http.BaseClient {
 
   static Future<String> forgetPassword(String login) async {
     final response = await http.post(
-      Uri.parse(Constants.BASE_URL +
-          '/forgot'),
+      Uri.parse(Constants.BASE_URL + '/forgot'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         "Access-Control_Allow_Origin": "*"
