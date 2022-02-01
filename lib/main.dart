@@ -5,15 +5,17 @@ import 'package:edudigital/demo_screen.dart';
 import 'package:edudigital/main_screeen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:provider/provider.dart';
 
+import 'Models.dart';
 import 'invite_screen.dart';
 import 'login_page.dart';
-
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   setUrlStrategy(PathUrlStrategy());
-  runApp(MyApp());
+  runApp(ChangeNotifierProvider<Data>(
+      create: (context) => Data(), child: MyApp()));
 }
 
 class RoutesName {

@@ -4,10 +4,12 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:edudigital/ApiClient.dart';
+import 'package:edudigital/Models.dart';
 import 'package:edudigital/constants.dart';
 import 'package:edudigital/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:provider/src/provider.dart';
 
 import 'main.dart';
 
@@ -30,7 +32,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: InkWell(
               child: Text("Выйти"),
               onTap: () {
-                // UserAgentClient.logout();
+                UserAgentClient().logout();
                 // print(UserAgentClient.available());
                 Navigator.popAndPushNamed(context, RoutesName.home);
               },
@@ -99,8 +101,51 @@ class TeacherScreen extends StatelessWidget {
   }
 }
 
-class StudentScreen extends StatelessWidget {
+class StudentScreen extends StatefulWidget {
   const StudentScreen({Key? key}) : super(key: key);
+
+  @override
+  State<StudentScreen> createState() => _StudentScreenState();
+}
+
+class _StudentScreenState extends State<StudentScreen> {
+  @override
+  Widget build(BuildContext context) => FutureBuilder(
+        future: Future.wait([
+          UserAgentClient()
+              .getProfile()
+              .then((val) => context.read<Data>().refreshProfileData(val)),
+          UserAgentClient()
+              .available()
+              .then((val) => context.read<Data>().refreshStatisticData(val)),
+        ]),
+        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
+          // print(snapshot);
+          if (snapshot.hasData) {
+            // print(snapshot.data[0]);
+            // context.read<Data>().refreshProfileData(snapshot.data[0]);
+            // context.read<Data>().refreshStatisticData(snapshot.data[1]);
+            return StudentScreenLoaded();
+          } else if (snapshot.hasError)
+            return Center(
+              child: Column(
+                children: [
+                  Text(Constants.loadingProfileError),
+                  MaterialButton(
+                    onPressed: () {},
+                    child: Text(Constants.repeat),
+                  ),
+                ],
+              ),
+            );
+          else
+            return Center(child: CircularProgressIndicator());
+        },
+      );
+}
+
+class StudentScreenLoaded extends StatelessWidget {
+  const StudentScreenLoaded({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -114,42 +159,42 @@ class StudentScreen extends StatelessWidget {
       body: SafeArea(
         child: MediaQuery.of(context).size.width > 700
             ? Row(
-              children: [
-                Container(width: 200, child: Menu()),
-                Flexible(
-                  child: Column(
-                    children: [
-                      MaterialButton(
-                        onPressed: () {},
-                        minWidth: double.infinity,
-                        color: Colors.deepPurple,
-                        child: CustomText(
-                          'SoftSkills',
-                          fontSize: 32,
-                          color: Colors.white,
+                children: [
+                  Container(width: 200, child: Menu()),
+                  Flexible(
+                    child: Column(
+                      children: [
+                        MaterialButton(
+                          onPressed: () {},
+                          minWidth: double.infinity,
+                          color: Colors.deepPurple,
+                          child: CustomText(
+                            'SoftSkills',
+                            fontSize: 32,
+                            color: Colors.white,
+                          ),
                         ),
-                      ),
-                      Flexible(
-                        child: Row(
-                          children: [
-                            Container(
-                                width: (MediaQuery.of(context).size.width -
-                                        200) *
-                                    0.5,
-                                child: StudentContent()),
-                            Container(
-                                width: (MediaQuery.of(context).size.width -
-                                        200) *
-                                    0.5,
-                                child: Greetings())
-                          ],
+                        Flexible(
+                          child: Row(
+                            children: [
+                              Container(
+                                  width: (MediaQuery.of(context).size.width -
+                                          200) *
+                                      0.5,
+                                  child: StudentContent()),
+                              Container(
+                                  width: (MediaQuery.of(context).size.width -
+                                          200) *
+                                      0.5,
+                                  child: Greetings())
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            )
+                ],
+              )
             : ListView(children: [Greetings(), StudentContent()]),
       ),
     );
@@ -748,11 +793,9 @@ class _InviteStudentState extends State<InviteStudent> {
                 _passwordError == null &&
                 _surnameError == null &&
                 _nameError == null) {
-              UserAgentClient.registry(
-                      _emailController.text,
-                      _passwordController.text,
-                      _nameController.text,
-                      _surnameController.text)
+              UserAgentClient()
+                  .registry(_emailController.text, _passwordController.text,
+                      _nameController.text, _surnameController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }
           },
@@ -799,26 +842,34 @@ class TeacherContent extends StatelessWidget {
       );
 }
 
-class StudentContent extends StatelessWidget {
+class StudentContent extends StatefulWidget {
+  @override
+  State<StudentContent> createState() => _StudentContentState();
+}
+
+class _StudentContentState extends State<StudentContent> {
   @override
   Widget build(context) => Container(
         padding: EdgeInsets.symmetric(vertical: 5.0),
         child: ListView(
           shrinkWrap: true,
-          children: [1, 2, 3, 4].map((e) {
-            return e != 4
-                ? EduProgressLevel(level: e, isOpen: e != 3)
-                : Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 5.0),
-                    child: MaterialButton(
-                      onPressed: () {
-                        Navigator.popAndPushNamed(
-                            context, RoutesName.trajectory);
-                      },
-                      color: Theme.of(context).accentColor,
-                      child: CustomText("Траектория"),
-                    ),
-                  );
+          children: context.watch<Data>().getStatisticData.map((levelData) {
+            print(levelData.name);
+            return EduProgressLevel(level: levelData, isOpen: true);
+            // Padding(
+            //     padding: EdgeInsets.symmetric(horizontal: 5.0),
+            //     child: MaterialButton(
+            //       onPressed: () {
+            //         UserAgentClient().available().then((value) {
+            //           print(value);
+            //           Navigator.popAndPushNamed(
+            //               context, RoutesName.trajectory);
+            //         });
+            //       },
+            //       color: Theme.of(context).accentColor,
+            //       child: CustomText("Траектория"),
+            //     ),
+            //   );
           }).toList(),
         ),
       );
@@ -953,7 +1004,7 @@ class Greetings extends StatelessWidget {
           shape: Border.all(color: Colors.blue),
           child: CustomText(
             Constants.greetings_for_teach
-                .replaceAll('%name%', 'Анастасия Бочкарева'),
+                .replaceAll('%name%', context.watch<Data>().getFullname),
             color: Colors.black,
             padding: 5.0,
           ),
@@ -1355,7 +1406,7 @@ class _TeacherMenuState extends State<TeacherMenu> {
                 padding: EdgeInsets.symmetric(vertical: 50.0),
                 child: IconButton(
                   onPressed: () {
-                    UserAgentClient.uploadImage();
+                    UserAgentClient().uploadImage();
                     // showDialog<String>(
                     //     context: context,
                     //     builder: (BuildContext context) => ChangeAvatar());
@@ -1452,7 +1503,7 @@ class Menu extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(top: 20.0),
                 child: Center(
-                  child: CustomText("Мой профиль"),
+                  child: CustomText('Профиль'),
                 ),
               ),
               Padding(
@@ -1465,17 +1516,17 @@ class Menu extends StatelessWidget {
               ),
               Center(
                 child: CustomText(
-                  "Анастасия Бочкарева",
+                  context.watch<Data>().getFullname,
                   fontSize: 16,
                 ),
               ),
               Center(
-                child: CustomText("Группа 001"),
+                child: CustomText("Группа ${context.watch<Data>().getGroup}"),
               ),
               SizedBox(height: 100.0),
               MaterialButton(
                 onPressed: () {
-                  UserAgentClient.available().then((value) => null);
+                  // UserAgentClient.available().then((value) => null);
                   Navigator.popAndPushNamed(context, RoutesName.student);
                 },
                 child: ListTile(
@@ -1501,7 +1552,7 @@ class Menu extends StatelessWidget {
 }
 
 class EduProgressLevel extends StatelessWidget {
-  final int level;
+  final LevelData level;
   final bool isOpen;
 
   EduProgressLevel({required this.level, required this.isOpen});
@@ -1515,7 +1566,7 @@ class EduProgressLevel extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Expanded(
                 child: Text(
-                  "$level уровень",
+                  "${level.name}",
                   textAlign: TextAlign.start,
                 ),
               ),
@@ -1535,39 +1586,33 @@ class EduProgressLevel extends StatelessWidget {
           ]),
           Divider(),
           Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(5.0),
-                child: EduProgressIndicator(
-                    progress: isOpen ? Random().nextInt(100) : 0),
-              ),
-              Padding(
-                padding: EdgeInsets.all(5.0),
-                child: EduProgressIndicator(
-                    progress: isOpen ? Random().nextInt(100) : 0),
-              ),
-              Padding(
-                padding: EdgeInsets.all(5.0),
-                child: EduProgressIndicator(
-                    progress: isOpen ? Random().nextInt(100) : 0),
-              ),
-            ],
+            children: level.tests
+                .map(
+                  (test) => Padding(
+                    padding: EdgeInsets.all(5.0),
+                    child: EduProgressIndicator(test: test),
+                  ),
+                )
+                .toList(),
           ),
         ]),
       );
 }
 
 class EduProgressIndicator extends StatelessWidget {
-  final int progress;
+  final TestData test;
 
-  EduProgressIndicator({required this.progress});
+  EduProgressIndicator({required this.test});
 
   @override
   Widget build(BuildContext context) {
+    double progress = test.correct / test.total;
     return MaterialButton(
-      onPressed: () {
-        Navigator.popAndPushNamed(context, RoutesName.testScreen);
-      },
+      onPressed: test.available
+          ? () {
+              Navigator.popAndPushNamed(context, RoutesName.testScreen);
+            }
+          : null,
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
         child: Row(children: [
@@ -1575,24 +1620,23 @@ class EduProgressIndicator extends StatelessWidget {
             child: LinearProgressIndicator(
               backgroundColor: Colors.grey,
               minHeight: 15,
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(checkColor(this.progress)),
-              value: this.progress / 100,
+              valueColor: AlwaysStoppedAnimation<Color>(checkColor(progress)),
+              value: progress,
             ),
           ),
           Padding(
-              padding: EdgeInsets.all(5.0), child: Text('${this.progress}%'))
+              padding: EdgeInsets.all(5.0), child: Text('${progress * 100}%'))
         ]),
       ),
     );
   }
 
-  Color checkColor(int progress) {
-    if (progress <= 30)
+  Color checkColor(double progress) {
+    if (progress <= 0.3)
       return Colors.red;
-    else if (progress > 30 && progress <= 60)
+    else if (progress > 0.3 && progress <= 0.6)
       return Colors.yellow;
-    else if (progress > 60)
+    else if (progress > 0.6)
       return Colors.green;
     else
       return Colors.grey;

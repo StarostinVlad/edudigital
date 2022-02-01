@@ -228,7 +228,7 @@ class _LoginFormState extends State<LoginForm> {
           padding: EdgeInsets.symmetric(vertical: 10.0),
           child: TextFormField(
             enabled: _enabled,
-            initialValue: 'user6_email@mail.ru',
+            initialValue: 'user3_email@mail.ru',
             onSaved: (input) => _login = input,
             validator: (value) {
               if (value == null || value.isEmpty || !value.isValidEmail()) {
@@ -321,7 +321,7 @@ class _LoginFormState extends State<LoginForm> {
                 //     Constants.isStudent
                 //         ? RoutesName.teacher
                 //         : RoutesName.student);
-                UserAgentClient.auth(_login!, _password!).then((value) {
+                UserAgentClient().auth(_login!, _password!).then((value) {
                   print(value);
                   Constants.isStudent = false;
                   if (value == 'Студент')
@@ -426,7 +426,8 @@ class _ForgetPasswordState extends State<ForgetPassword> {
               });
             }
             if (_emailError == null) {
-              UserAgentClient.forgetPassword(_emailController.text)
+              UserAgentClient()
+                  .forgetPassword(_emailController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }
           },
