@@ -2,9 +2,11 @@ import 'dart:html';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:edudigital/ApiClient.dart';
+import 'package:edudigital/Models.dart';
 import 'package:edudigital/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/src/provider.dart';
 
 import 'account_page.dart';
 import 'main.dart';
@@ -19,7 +21,7 @@ class LoginScreen extends StatelessWidget {
         body: Container(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: MediaQuery.of(context).size.width >= 700
+          child: MyApp.isDesktop(context)
               ? Container(
                   padding: EdgeInsets.only(top: 50.0),
                   color: Theme.of(context).primaryColor,
@@ -41,68 +43,75 @@ class LoginScreen extends StatelessWidget {
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 40, vertical: 30),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(children: [
-                                          Container(
-                                              height: 75.0,
-                                              child: Image.asset(
-                                                  'EIKFU_logo.png')),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                CustomText(
-                                                  'Казанский федеральный',
-                                                  fontSize: 20,
-                                                ),
-                                                CustomText(
-                                                  'УНИВЕРСИТЕТ',
-                                                  fontSize: 20,
-                                                ),
-                                                CustomText(
-                                                  'Елабужский институт',
-                                                  fontSize: 20,
-                                                )
-                                              ],
+                                    child: Flexible(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(children: [
+                                            Container(
+                                                height: 75.0,
+                                                child: Image.asset(
+                                                    'EIKFU_logo.png')),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  CustomText(
+                                                    'Казанский федеральный',
+                                                    fontSize: 20,
+                                                  ),
+                                                  CustomText(
+                                                    'УНИВЕРСИТЕТ',
+                                                    fontSize: 20,
+                                                  ),
+                                                  CustomText(
+                                                    'Елабужский институт',
+                                                    fontSize: 20,
+                                                  )
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          CustomText(
-                                            'EDU-IT',
-                                            fontSize: 52,
-                                          ),
-                                        ]),
-                                        SizedBox(
-                                          height: 250,
-                                        ),
-                                        Text(
-                                          'Система оценки',
-                                          textAlign: TextAlign.start,
-                                          style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .primaryColor,
-                                              fontSize: 46),
-                                        ),
-                                        Text(
-                                          'цифровых компетенций',
-                                          textAlign: TextAlign.start,
-                                          style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .primaryColor,
-                                              fontSize: 46),
-                                        ),
-                                        CustomText(
-                                          'Онлайн-платформа для оценки и',
-                                          fontSize: 14,
-                                        ),
-                                        CustomText(
-                                          'развития цифровой компетентности студентов педагогических направлений',
-                                          fontSize: 14,
-                                        )
-                                      ],
+                                            CustomText(
+                                              'EDU-IT',
+                                              fontSize: 52,
+                                            ),
+                                          ]),
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Система оценки',
+                                                textAlign: TextAlign.start,
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor,
+                                                    fontSize: 46),
+                                              ),
+                                              Text(
+                                                'цифровых компетенций',
+                                                textAlign: TextAlign.start,
+                                                style: TextStyle(
+                                                    color: Theme.of(context)
+                                                        .primaryColor,
+                                                    fontSize: 46),
+                                              ),
+                                              CustomText(
+                                                'Онлайн-платформа для оценки и',
+                                                fontSize: 14,
+                                              ),
+                                              CustomText(
+                                                'развития цифровой компетентности студентов педагогических направлений',
+                                                fontSize: 14,
+                                              ),
+                                            ],
+                                          )
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -282,23 +291,25 @@ class _LoginFormState extends State<LoginForm> {
             ),
           ),
         ),
-        Container(
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-              RememberMe(),
-              TextButton(
-                onPressed: () {
-                  showDialog<String>(
-                      context: context,
-                      builder: (BuildContext context) => ForgetPassword());
-                },
-                child: CustomText(
-                  'Забыли пароль?',
-                  color: Theme.of(context).accentColor,
-                ),
-              )
-            ])),
+        Flexible(
+          child: Container(
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                RememberMe(),
+                TextButton(
+                  onPressed: () {
+                    showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => ForgetPassword());
+                  },
+                  child: CustomText(
+                    'Забыли пароль?',
+                    color: Theme.of(context).accentColor,
+                  ),
+                )
+              ])),
+        ),
         Container(
           padding: EdgeInsets.symmetric(vertical: 30.0),
           width: double.infinity,
@@ -322,19 +333,31 @@ class _LoginFormState extends State<LoginForm> {
                 //         ? RoutesName.teacher
                 //         : RoutesName.student);
                 UserAgentClient().auth(_login!, _password!).then((value) {
-                  print(value);
-                  Constants.isStudent = false;
-                  if (value == 'Студент')
-                    Navigator.popAndPushNamed(context, "/student");
-                  if (value == 'Учитель')
-                    Navigator.popAndPushNamed(context, "/teacher");
-                  if (value == 'Администратор')
-                    Navigator.popAndPushNamed(context, "/admin");
-                  else
-                    setState(() {
-                      _enabled = true;
-                      _errorMsg = "Неверный email или пароль";
-                    });
+                  UserAgentClient().getProfile().then((value) {
+                    context.read<Data>().refreshProfileData(value);
+                    // Constants.isStudent = false;
+                    if (value.role == 'student')
+                      Navigator.popAndPushNamed(context, "/student");
+                    if (value.role == 'teacher') {
+                      // UserAgentClient().getGroups().then((value) {
+                      //   if (value.isNotEmpty) {
+                      //     // context.read<GroupData>().refreshGroupsData(value);
+                      //     UserAgentClient().getGroupDetail(value.first.id).then(
+                      //         (groupDetail) => context
+                      //             .read<GroupData>()
+                      //             .refreshGroupDetailData(groupDetail));
+                      //   }
+                      // });
+                      Navigator.popAndPushNamed(context, "/teacher");
+                    }
+                    if (value.role == 'admin')
+                      Navigator.popAndPushNamed(context, "/admin");
+                    else
+                      setState(() {
+                        _enabled = true;
+                        _errorMsg = "Неверный email или пароль";
+                      });
+                  });
                 });
               }
             },

@@ -2,50 +2,96 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Data with ChangeNotifier {
-  User? _data;
+  User? _user;
+
+  QuestionData? _questionData;
+
+  User? get getProfileData => _user;
+
+  QuestionData? get getQuestionData => _questionData;
+
+  String get getFullname => '${_user!.name} ${_user!.surname}';
+
+  String get getGroup => _user!.groupTitle;
+
+  void refreshProfileData(User user) {
+    _user = user;
+    notifyListeners();
+  }
+
+  void refreshQuestionData(QuestionData questionData) {
+    _questionData = questionData;
+    // notifyListeners();
+  }
+
+  String get getUserAnswerId => _questionData!.answerId;
+
+  void refreshUserAnswerId(String id) {
+    _questionData!.answerId = id;
+    notifyListeners();
+  }
+}
+
+class StudentStatisticData {
   List<LevelData> _levelData = [];
-
-  // UserAndStatistic _userAndStatistic;
-
-  // UserAndStatistic get getUserAndStatistic => _userAndStatistic;
-
-  User? get getProfileData => _data;
-
-  String get getFullname => '${_data!.name} ${_data!.surname}';
-
-  String get getGroup => _data!.surname;
 
   List<LevelData> get getStatisticData {
     print(_levelData.length);
     return _levelData;
   }
 
-  // void refreshProfileAndStatisticData(
-  //     Map<String, dynamic> json, List<dynamic> jsonArray) {
-  //   _data = User.fromJson(json);
-  //   _levelData = jsonArray.map((levelJson) {
-  //     print(levelJson);
-  //     return LevelData.fromJson(levelJson);
-  //   }).toList();
-  //   _userAndStatistic = UserAndStatistic(_data, _levelData);
-  //   notifyListeners();
-  // }
+  void refreshStatisticData(List<LevelData> levelData) {
+    _levelData = levelData;
+  }
+}
 
-  void refreshProfileData(Map<String, dynamic> json) {
-    _data = User.fromJson(json);
+class GroupData with ChangeNotifier {
+  List<Group> _groups = [];
+
+  GroupDetail? _groupDetail;
+
+  GroupDetail? get groupDetail => _groupDetail;
+
+  List<Group> get groups => _groups;
+
+  void refreshGroupsData(List<Group> groups) {
+    _groups = groups;
     notifyListeners();
   }
 
-  void refreshStatisticData(List<dynamic> jsonArray) {
-    // print(jsonArray);
-    _levelData = jsonArray.map((levelJson) {
-      print(levelJson);
-      return LevelData.fromJson(levelJson);
-    }).toList();
+  void refreshGroupDetailData(GroupDetail groupDetail) {
+    _groupDetail= groupDetail;
     notifyListeners();
   }
+}
+
+class GroupDetail {
+  final String id, link, name;
+  final List<User> members;
+
+  GroupDetail(this.id, this.link, this.name, this.members);
+
+  GroupDetail.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        link = json['link'] ?? '',
+        name = json['name'],
+        members = (json['members'] as List).map((memberJson) {
+          return User.fromJson(memberJson);
+        }).toList();
+}
+
+class Group {
+  final String id, link, name;
+
+  Group(this.id, this.link, this.name);
+
+  Group.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        link = json['link'] ?? '',
+        name = json['name'];
 }
 
 class User {
@@ -53,16 +99,20 @@ class User {
   final String id;
   final String image;
   final String name;
-  final String surname;
+  final String surname, groupId, groupTitle, role;
 
-  User(this.email, this.id, this.image, this.name, this.surname);
+  User(this.email, this.id, this.image, this.name, this.surname, this.groupId,
+      this.groupTitle, this.role);
 
   User.fromJson(Map<String, dynamic> json)
       : email = json['email'],
         id = json['id'],
         image = json['image'] ?? '',
         name = json['name'],
-        surname = json['surname'];
+        surname = json['surname'],
+        groupId = json['group'] != null ? json['group']['id'] : '',
+        groupTitle = json['group'] != null ? json['group']['name'] : '',
+        role = json['role']['name'];
 }
 
 class LevelData {
@@ -115,4 +165,32 @@ class UserAndStatistic {
   final List<LevelData>? levelList;
 
   UserAndStatistic(this.user, this.levelList);
+}
+
+class QuestionData {
+  final String body, id, title;
+  final List<AnswerData>? answers;
+  String answerId = '';
+
+  QuestionData(this.body, this.id, this.title, this.answers);
+
+  QuestionData.fromJson(Map<String, dynamic> json)
+      : body = json['body'],
+        id = json['id'],
+        title = json['title'],
+        answers = (json['answers'] as List).map((answerJson) {
+          print('json: $json');
+          return AnswerData.fromJson(answerJson);
+        }).toList();
+}
+
+class AnswerData {
+  final String body, id, image;
+
+  AnswerData(this.body, this.id, this.image);
+
+  AnswerData.fromJson(Map<String, dynamic> json)
+      : body = json['body'],
+        id = json['id'],
+        image = json['image_path'] ?? '';
 }

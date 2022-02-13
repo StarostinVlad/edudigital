@@ -243,7 +243,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
               });
             }
             if (_surnameError == null && _nameError == null) {
-              UserAgentClient.createGroup(
+              UserAgentClient().createGroup(
                       _emailController.text, _fullnameController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }

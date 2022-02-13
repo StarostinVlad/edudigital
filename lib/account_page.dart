@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 import 'dart:math';
@@ -7,9 +8,11 @@ import 'package:edudigital/ApiClient.dart';
 import 'package:edudigital/Models.dart';
 import 'package:edudigital/constants.dart';
 import 'package:edudigital/login_page.dart';
+import 'package:edudigital/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/src/provider.dart';
+import 'package:timer_builder/timer_builder.dart';
 
 import 'main.dart';
 
@@ -34,7 +37,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               onTap: () {
                 UserAgentClient().logout();
                 // print(UserAgentClient.available());
-                Navigator.popAndPushNamed(context, RoutesName.home);
+                Navigator.popAndPushNamed(context, RoutesName.login);
               },
             ),
           ),
@@ -56,13 +59,13 @@ class TeacherScreen extends StatelessWidget {
       appBar: CustomAppBar(
         height: 50,
       ),
-      drawer: MediaQuery.of(context).size.width < 700
+      drawer: !MyApp.isDesktop(context)
           ? Drawer(
               child: TeacherMenu(),
             )
           : null,
       body: SafeArea(
-        child: MediaQuery.of(context).size.width > 700
+        child: MyApp.isDesktop(context)
             ? Row(
                 children: [
                   Container(width: 200, child: TeacherMenu()),
@@ -101,47 +104,55 @@ class TeacherScreen extends StatelessWidget {
   }
 }
 
-class StudentScreen extends StatefulWidget {
+class StudentScreen extends StatelessWidget {
   const StudentScreen({Key? key}) : super(key: key);
 
-  @override
-  State<StudentScreen> createState() => _StudentScreenState();
-}
+  Future<List<LevelData>> _loadData() => UserAgentClient().available();
 
-class _StudentScreenState extends State<StudentScreen> {
   @override
   Widget build(BuildContext context) => FutureBuilder(
-        future: Future.wait([
-          UserAgentClient()
-              .getProfile()
-              .then((val) => context.read<Data>().refreshProfileData(val)),
-          UserAgentClient()
-              .available()
-              .then((val) => context.read<Data>().refreshStatisticData(val)),
-        ]),
-        builder: (BuildContext context, AsyncSnapshot<dynamic> snapshot) {
-          // print(snapshot);
-          if (snapshot.hasData) {
-            // print(snapshot.data[0]);
-            // context.read<Data>().refreshProfileData(snapshot.data[0]);
-            // context.read<Data>().refreshStatisticData(snapshot.data[1]);
-            return StudentScreenLoaded();
-          } else if (snapshot.hasError)
-            return Center(
-              child: Column(
-                children: [
-                  Text(Constants.loadingProfileError),
-                  MaterialButton(
-                    onPressed: () {},
-                    child: Text(Constants.repeat),
-                  ),
-                ],
-              ),
-            );
-          else
+        future: _loadData(),
+        builder:
+            (BuildContext context, AsyncSnapshot<List<LevelData>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
             return Center(child: CircularProgressIndicator());
+          if (snapshot.hasData) {
+            print('hasData: ${snapshot.hasData}');
+            Provider.of<StudentStatisticData>(context)
+                .refreshStatisticData(snapshot.data!);
+          }
+          if (snapshot.hasError) {
+            print('snapshot.error: ${snapshot.error}');
+            return LoadingError(
+              onPressed: () {
+                _loadData();
+              },
+            );
+          }
+          return StudentScreenLoaded();
         },
       );
+}
+
+class LoadingError extends StatelessWidget {
+  final ui.VoidCallback? onPressed;
+
+  const LoadingError({required this.onPressed, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        children: [
+          Text(Constants.loadingProfileError),
+          MaterialButton(
+            onPressed: onPressed,
+            child: Text(Constants.repeat),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class StudentScreenLoaded extends StatelessWidget {
@@ -153,15 +164,13 @@ class StudentScreenLoaded extends StatelessWidget {
       appBar: CustomAppBar(
         height: 50,
       ),
-      drawer: MediaQuery.of(context).size.width < 700
-          ? Drawer(child: Menu())
-          : null,
+      drawer: !MyApp.isDesktop(context) ? Drawer(child: Menu()) : null,
       body: SafeArea(
-        child: MediaQuery.of(context).size.width > 700
+        child: MyApp.isDesktop(context)
             ? Row(
                 children: [
                   Container(width: 200, child: Menu()),
-                  Flexible(
+                  Expanded(
                     child: Column(
                       children: [
                         MaterialButton(
@@ -174,21 +183,20 @@ class StudentScreenLoaded extends StatelessWidget {
                             color: Colors.white,
                           ),
                         ),
-                        Flexible(
-                          child: Row(
-                            children: [
-                              Container(
-                                  width: (MediaQuery.of(context).size.width -
-                                          200) *
-                                      0.5,
-                                  child: StudentContent()),
-                              Container(
-                                  width: (MediaQuery.of(context).size.width -
-                                          200) *
-                                      0.5,
-                                  child: Greetings())
-                            ],
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Flexible(
+                              flex: 1,
+                              child: StudentContent(),
+                            ),
+                            Flexible(
+                              flex: 1,
+                              child: Greetings(),
+                            )
+                          ],
                         ),
                       ],
                     ),
@@ -274,12 +282,12 @@ class _StudentTrajectoryScreenState extends State<StudentTrajectoryScreen> {
       appBar: CustomAppBar(
         height: 50,
       ),
-      drawer: MediaQuery.of(context).size.width < 700
+      drawer: !MyApp.isDesktop(context)
           ? Drawer(
               child: Menu(),
             )
           : null,
-      body: MediaQuery.of(context).size.width < 700
+      body: !MyApp.isDesktop(context)
           ? ListView(
               children: [
                 Container(
@@ -339,12 +347,12 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
       appBar: CustomAppBar(
         height: 50,
       ),
-      drawer: MediaQuery.of(context).size.width < 700
+      drawer: MyApp.isDesktop(context)
           ? Drawer(
               child: TeacherMenu(),
             )
           : null,
-      body: MediaQuery.of(context).size.width < 700
+      body: !MyApp.isDesktop(context)
           ? TeacherStatistic()
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -467,32 +475,145 @@ class _TestScreenState extends State<TestScreen> {
       appBar: CustomAppBar(
         height: 50,
       ),
-      drawer: MediaQuery.of(context).size.width < 700
+      drawer: !MyApp.isDesktop(context)
           ? Drawer(
               child: Menu(),
             )
           : null,
-      body: MediaQuery.of(context).size.width < 700
-          ? Question()
+      body: !MyApp.isDesktop(context)
+          ? QuestionScreen()
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(width: 200, child: Menu()),
-                Flexible(child: Question()),
+                Flexible(child: QuestionScreen()),
               ],
             ),
     );
   }
 }
 
-class Question extends StatefulWidget {
-  const Question({Key? key}) : super(key: key);
-
+class OtpTimer extends StatefulWidget {
   @override
-  _QuestionState createState() => _QuestionState();
+  _OtpTimerState createState() => _OtpTimerState();
 }
 
-class _QuestionState extends State<Question> {
+class _OtpTimerState extends State<OtpTimer> {
+  final interval = const Duration(seconds: 1);
+
+  Timer? _timer;
+  int timerMaxSeconds = 0;
+
+  int currentSeconds = 0;
+
+  String get timerText =>
+      '${((timerMaxSeconds - currentSeconds) ~/ 60).toString().padLeft(2, '0')}: ${((timerMaxSeconds - currentSeconds) % 60).toString().padLeft(2, '0')}';
+
+  startTimeout() {
+    var duration = interval;
+    _timer = Timer.periodic(duration, (timer) {
+      setState(() {
+        currentSeconds = timer.tick;
+        if (timer.tick >= timerMaxSeconds) timer.cancel();
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    Repository().getEndTime().then((value) {
+      timerMaxSeconds = value.difference(DateTime.now()).inSeconds;
+      startTimeout();
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Icon(Icons.timer),
+        SizedBox(
+          width: 5,
+        ),
+        Text(timerText)
+      ],
+    );
+  }
+}
+
+class QuestionScreen extends StatefulWidget {
+  QuestionScreen({Key? key}) : super(key: key);
+
+  @override
+  State<QuestionScreen> createState() => _QuestionScreenState();
+}
+
+class _QuestionScreenState extends State<QuestionScreen> {
+  Future<QuestionData> _question() => UserAgentClient().getNextQuestion();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        OtpTimer(),
+        FutureBuilder(
+            future: _question(),
+            builder: (context, AsyncSnapshot<QuestionData> snapshot) {
+              if (snapshot.hasError) {
+                if (snapshot.error is TestIsOverException) {
+                  print(snapshot.error);
+                  Future.delayed(Duration(milliseconds: 200)).then((value) =>
+                      Navigator.popAndPushNamed(context, RoutesName.student));
+                }
+                return LoadingError(onPressed: () {});
+              }
+              if (snapshot.connectionState != ConnectionState.done)
+                return Center(child: CircularProgressIndicator());
+              if (snapshot.hasData) {
+                if (snapshot.data != null) {
+                  print('snapshot: ${snapshot.data}');
+                  var questionData = snapshot.data!;
+                  Provider.of<Data>(context, listen: false)
+                      .refreshQuestionData(questionData);
+                  return Column(
+                    children: [
+                      QuestionContainer(questionData),
+                      MaterialButton(
+                        color: Theme.of(context).accentColor,
+                        onPressed: () {
+                          UserAgentClient()
+                              .giveAnswerForQuestion(
+                                  questionData.id,
+                                  Provider.of<Data>(context, listen: false)
+                                      .getUserAnswerId)
+                              .then((value) => setState(() {}));
+                        },
+                        child: Text('Далее'),
+                      ),
+                    ],
+                  );
+                }
+              }
+              return Center(child: CircularProgressIndicator());
+            }),
+      ],
+    );
+  }
+}
+
+class QuestionContainer extends StatelessWidget {
+  final QuestionData _questionData;
+
+  const QuestionContainer(this._questionData, {Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -501,7 +622,7 @@ class _QuestionState extends State<Question> {
           width: double.infinity,
           color: Colors.purple,
           child: CustomText(
-            'Тестирование первого уровня',
+            _questionData.title,
             fontSize: 32,
             color: Colors.white,
           )),
@@ -509,46 +630,57 @@ class _QuestionState extends State<Question> {
         padding: const EdgeInsets.all(40.0),
         child: Center(
             child: Text(
-          'Тут какой то очень прикольный вопрос',
+          _questionData.body,
           style: Theme.of(context).textTheme.headline5,
         )),
       ),
-      Container(
-        padding: EdgeInsets.all(10.0),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            '1. Тут какой-то первый вариант ответа',
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      Container(
-        padding: EdgeInsets.all(10.0),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            '2. Здесь второй вариант ответа',
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      Container(
-        padding: EdgeInsets.all(10.0),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            '3. Здесь третий',
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      MaterialButton(
-        color: Theme.of(context).accentColor,
-        onPressed: () {},
-        child: Text('Далее'),
-      ),
+      AnswersContainer(_questionData.answers!),
     ]);
+  }
+}
+
+class AnswersContainer extends StatefulWidget {
+  final List<AnswerData> _answers;
+
+  const AnswersContainer(this._answers, {Key? key}) : super(key: key);
+
+  @override
+  State<AnswersContainer> createState() => _AnswersContainerState();
+}
+
+class _AnswersContainerState extends State<AnswersContainer> {
+  var val;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: widget._answers.length,
+      itemBuilder: (BuildContext context, int index) => Container(
+        padding: EdgeInsets.all(10.0),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: ListTile(
+            leading: Radio(
+              value: index,
+              groupValue: val,
+              onChanged: (value) {
+                Provider.of<Data>(context, listen: false)
+                    .refreshUserAnswerId(widget._answers[index].id);
+                setState(() {
+                  val = value;
+                });
+              },
+              activeColor: Colors.green,
+            ),
+            title: Text(
+              widget._answers[index].body,
+              style: Theme.of(context).textTheme.headline6,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -575,15 +707,9 @@ class CreateGroup extends StatefulWidget {
 
 class _CreateGroupState extends State<CreateGroup> {
   var _nameController = TextEditingController();
-  var _surnameController = TextEditingController();
+  var _quantityController = TextEditingController();
 
-  String? _nameError, _surnameError;
-
-  String getRandString(int len) {
-    var random = Random.secure();
-    var values = List<int>.generate(len, (i) => random.nextInt(255));
-    return base64UrlEncode(values);
-  }
+  String? _nameError, _quantityError;
 
   @override
   Widget build(BuildContext context) {
@@ -611,9 +737,10 @@ class _CreateGroupState extends State<CreateGroup> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
-                  controller: _surnameController,
+                  controller: _quantityController,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    errorText: _surnameError,
+                    errorText: _quantityError,
                     focusColor: Theme.of(context).accentColor,
                     border: OutlineInputBorder(),
                     hintText: 'Кол-во студентов',
@@ -633,25 +760,31 @@ class _CreateGroupState extends State<CreateGroup> {
           onPressed: () {
             setState(() {
               _nameError = null;
-              _surnameError = null;
+              _quantityError = null;
             });
             if (_nameController.text.length < 2) {
               setState(() {
-                _nameError = "Имя должно быть не короче 2х символов";
+                _nameError = "Название должно быть не короче 2х символов";
               });
             }
-            if (_surnameController.text.length < 2) {
+            int quantity = int.parse(_quantityController.text);
+            if (quantity < 1) {
               setState(() {
-                _surnameError = "Фамилия должна быть не короче 2х символов";
+                _quantityError = "Количество не должно быть меньше 1";
               });
             }
-            if (_surnameError == null && _nameError == null) {
-              UserAgentClient.createGroup(
-                      _nameController.text, _surnameController.text)
+            if (quantity > 15) {
+              setState(() {
+                _quantityError = "Количество не должно быть больше 15";
+              });
+            }
+            if (_quantityError == null && _nameError == null) {
+              UserAgentClient()
+                  .createGroup(_nameController.text, _quantityController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }
           },
-          child: const Text('OK'),
+          child: const Text(Constants.create),
         ),
       ],
     );
@@ -810,36 +943,50 @@ class TeacherContent extends StatelessWidget {
   @override
   Widget build(context) => Padding(
         padding: EdgeInsets.all(5.0),
-        child: Column(
-            children: [1, 2, 3, 4]
-                .map(
-                  (e) => MaterialButton(
-                    onPressed: () {
-                      if (e == 1) {
-                        showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) => InviteStudent());
-                      } else {
-                        Navigator.popAndPushNamed(context, RoutesName.detail);
-                      }
-                    },
-                    child: e == 1
-                        ? CustomText(
-                            '+ Пригласить студента',
-                            color: Colors.green,
-                            padding: 15.0,
-                            fontSize: 16.0,
-                          )
-                        : CustomText(
-                            Constants.students[e - 2],
-                            color: Colors.black,
-                            padding: 15.0,
-                            fontSize: 14.0,
-                          ),
-                  ),
-                )
-                .toList()),
+        child: Column(children: [
+          MaterialButton(
+              onPressed: () {
+                showDialog<String>(
+                    context: context,
+                    builder: (BuildContext context) => InviteStudent());
+              },
+              child: CustomText(
+                '+ Пригласить студента',
+                color: Colors.green,
+                padding: 15.0,
+                fontSize: 16.0,
+              )),
+          memberList(context.watch<GroupData>().groupDetail?.members),
+        ]),
       );
+
+  memberList(List<User>? members) {
+    if (members == null) return CircularProgressIndicator();
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: members.length,
+      itemBuilder: (BuildContext context, int index) {
+        return MaterialButton(
+            onPressed: () {
+              Navigator.popAndPushNamed(context, RoutesName.detail);
+            },
+            child: ListTile(
+              leading: members[index].image.isNotEmpty
+                  ? Image.memory(base64Decode(members[index].image))
+                  : Icon(
+                      Icons.account_circle,
+                      size: 50,
+                    ),
+              title: CustomText(
+                '${members[index].name} ${members[index].surname}',
+                color: Colors.black,
+                padding: 15.0,
+                fontSize: 14.0,
+              ),
+            ));
+      },
+    );
+  }
 }
 
 class StudentContent extends StatefulWidget {
@@ -851,26 +998,39 @@ class _StudentContentState extends State<StudentContent> {
   @override
   Widget build(context) => Container(
         padding: EdgeInsets.symmetric(vertical: 5.0),
-        child: ListView(
-          shrinkWrap: true,
-          children: context.watch<Data>().getStatisticData.map((levelData) {
-            print(levelData.name);
-            return EduProgressLevel(level: levelData, isOpen: true);
-            // Padding(
-            //     padding: EdgeInsets.symmetric(horizontal: 5.0),
-            //     child: MaterialButton(
-            //       onPressed: () {
-            //         UserAgentClient().available().then((value) {
-            //           print(value);
-            //           Navigator.popAndPushNamed(
-            //               context, RoutesName.trajectory);
-            //         });
-            //       },
-            //       color: Theme.of(context).accentColor,
-            //       child: CustomText("Траектория"),
-            //     ),
-            //   );
-          }).toList(),
+        child: Column(
+          children: [
+            ListView(
+              shrinkWrap: true,
+              children:
+                  Provider.of<StudentStatisticData>(context, listen: false)
+                      .getStatisticData
+                      .map((levelData) {
+                print(levelData.name);
+                return EduProgressLevel(level: levelData, isOpen: true);
+                // Padding(
+                //     padding: EdgeInsets.symmetric(horizontal: 5.0),
+                //     child: MaterialButton(
+                //       onPressed: () {
+                //         UserAgentClient().available().then((value) {
+                //           print(value);
+                //           Navigator.popAndPushNamed(
+                //               context, RoutesName.trajectory);
+                //         });
+                //       },
+                //       color: Theme.of(context).accentColor,
+                //       child: CustomText("Траектория"),
+                //     ),
+                //   );
+              }).toList(),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.popAndPushNamed(context, RoutesName.trajectory);
+              },
+              child: Text(Constants.watchTrajectory),
+            ),
+          ],
         ),
       );
 }
@@ -983,8 +1143,8 @@ class _AccessLevelDialogState extends State<AccessLevelDialog> {
         TextButton(
           onPressed: () {
             if (_surnameError == null && _nameError == null) {
-              UserAgentClient.createGroup(
-                      _nameController.text, _surnameController.text)
+              UserAgentClient()
+                  .createGroup(_nameController.text, _surnameController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }
           },
@@ -1168,7 +1328,7 @@ class StudentStatisticItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: MediaQuery.of(context).size.width <= 700
+      child: !MyApp.isDesktop(context)
           ? ListView(
               shrinkWrap: true,
               children: children(context),
@@ -1296,7 +1456,7 @@ class TeacherStatisticItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: MediaQuery.of(context).size.width <= 700
+      child: !MyApp.isDesktop(context)
           ? ListView(
               shrinkWrap: true,
               children: children(context),
@@ -1402,67 +1562,27 @@ class _TeacherMenuState extends State<TeacherMenu> {
                   child: CustomText(option1Text),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 50.0),
-                child: IconButton(
-                  onPressed: () {
-                    UserAgentClient().uploadImage();
-                    // showDialog<String>(
-                    //     context: context,
-                    //     builder: (BuildContext context) => ChangeAvatar());
-                  },
-                  icon: Icon(
-                    Icons.account_circle,
-                    color: Colors.white,
-                    size: 50.0,
-                  ),
-                ),
-              ),
+              ProfileAvatar(),
               Center(
                 child: CustomText(
-                  "Анастасия Бочкарева",
+                  context.watch<Data>().getFullname,
                   fontSize: 16,
                   padding: 10.0,
                 ),
               ),
-              Center(
-                child: ListView(shrinkWrap: true, children: [
-                  MaterialButton(
-                    onPressed: () {
-                      Navigator.popAndPushNamed(context, RoutesName.teacher);
-                    },
-                    child: ListTile(
-                      title: CustomText(
-                        "Группа 001",
-                        fontSize: 12,
-                      ),
-                    ),
+              groupsList(context.watch<GroupData>().groups),
+              MaterialButton(
+                onPressed: () {
+                  showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) => CreateGroup());
+                },
+                child: ListTile(
+                  title: CustomText(
+                    "Создать группу",
+                    fontSize: 12,
                   ),
-                  MaterialButton(
-                    onPressed: () {
-                      Navigator.popAndPushNamed(context, RoutesName.teacher);
-                    },
-                    child: ListTile(
-                      title: CustomText(
-                        "Группа 002",
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  MaterialButton(
-                    onPressed: () {
-                      showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) => CreateGroup());
-                    },
-                    child: ListTile(
-                      title: CustomText(
-                        "Создать группу",
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ]),
+                ),
               ),
               SizedBox(height: 100.0),
               MaterialButton(
@@ -1487,6 +1607,58 @@ class _TeacherMenuState extends State<TeacherMenu> {
           ],
         ),
       );
+
+  groupsList(List<Group> groups) {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: groups.length,
+      itemBuilder: (BuildContext context, int index) {
+        return MaterialButton(
+          onPressed: () {
+            Navigator.popAndPushNamed(context, RoutesName.teacher);
+          },
+          child: ListTile(
+            title: CustomText(
+              groups[index].name,
+              fontSize: 12,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ProfileAvatar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var user = context.watch<Data>().getProfileData;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 50.0),
+      child: IconButton(
+        onPressed: () {
+          UserAgentClient().uploadImage().then((value) => UserAgentClient()
+              .getProfile()
+              .then((value) => context.read<Data>().refreshProfileData(value)));
+        },
+        iconSize: 50,
+        icon: user!.image.isNotEmpty
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(25),
+                child: Image.memory(
+                  base64Decode(user.image.toString()),
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
+              )
+            : Icon(
+                Icons.account_circle,
+                color: Colors.white,
+              ),
+      ),
+    );
+  }
 }
 
 class Menu extends StatelessWidget {
@@ -1506,14 +1678,7 @@ class Menu extends StatelessWidget {
                   child: CustomText('Профиль'),
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.symmetric(vertical: 50.0),
-                child: Icon(
-                  Icons.account_circle,
-                  color: Colors.white,
-                  size: 50.0,
-                ),
-              ),
+              ProfileAvatar(),
               Center(
                 child: CustomText(
                   context.watch<Data>().getFullname,
@@ -1521,7 +1686,7 @@ class Menu extends StatelessWidget {
                 ),
               ),
               Center(
-                child: CustomText("Группа ${context.watch<Data>().getGroup}"),
+                child: CustomText("${context.watch<Data>().getGroup}"),
               ),
               SizedBox(height: 100.0),
               MaterialButton(
@@ -1561,26 +1726,17 @@ class EduProgressLevel extends StatelessWidget {
   Widget build(context) => Padding(
         padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
         child: Column(children: [
-          Row(children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Expanded(
-                child: Text(
-                  "${level.name}",
-                  textAlign: TextAlign.start,
-                ),
-              ),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Text(
+              "${level.name}",
+              textAlign: TextAlign.start,
             ),
-            if (isOpen)
-              SizedBox()
-            else
-              Expanded(
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    "Закрыт",
-                    textAlign: TextAlign.end,
-                  ),
+            if (!isOpen)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  "Закрыт",
+                  textAlign: TextAlign.end,
                 ),
               ),
           ]),
@@ -1606,11 +1762,24 @@ class EduProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double progress = test.correct / test.total;
+    // double progress = test.correct / test.total;
+    double progress = test.total / 10;
     return MaterialButton(
       onPressed: test.available
           ? () {
-              Navigator.popAndPushNamed(context, RoutesName.testScreen);
+              UserAgentClient()
+                  .startTest(test.id)
+                  .then((value) =>
+                      Navigator.popAndPushNamed(context, RoutesName.testScreen))
+                  .onError((error, stackTrace) {
+                if (error is TestIsAlredyStartedException)
+                  showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) =>
+                          AnotherTestAlreadyStartedDialog());
+                else
+                  Navigator.popAndPushNamed(context, RoutesName.student);
+              });
             }
           : null,
       child: Padding(
@@ -1640,5 +1809,25 @@ class EduProgressIndicator extends StatelessWidget {
       return Colors.green;
     else
       return Colors.grey;
+  }
+}
+
+class AnotherTestAlreadyStartedDialog extends StatelessWidget {
+  const AnotherTestAlreadyStartedDialog({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text(Constants.attention),
+      content: const Text(Constants.anotherTestAlreadyStarted),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context, 'Cancel');
+          },
+          child: const Text('OK'),
+        ),
+      ],
+    );
   }
 }

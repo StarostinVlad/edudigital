@@ -1,5 +1,5 @@
 class Constants {
-  static const String BASE_URL = "https://10.81.16.64:80";
+  static const String BASE_URL = "https://10.81.16.77:80";
   static const String greetings_for_student = """Привет, %name%!
 
   Мы рады приветствовать тебя на платформе, которая покажет насколько ты готов к своей
@@ -33,11 +33,23 @@ class Constants {
 
 минут.""";
 
-  static const students = ['Иванов Иван Иванович','Петров Петр Петрович','Соболев Андрей Андреевич'];
+  static const students = [
+    'Иванов Иван Иванович',
+    'Петров Петр Петрович',
+    'Соболев Андрей Андреевич'
+  ];
 
   static var isStudent = false;
 
   static String loadingProfileError = '';
 
-  static String repeat= '';
+  static String repeat = '';
+
+  static const String anotherTestAlreadyStarted = 'Вы уже выполняете другой тест';
+
+  static const String attention = 'Внимание!';
+
+  static const String watchTrajectory='Моя траектория развития';
+
+  static const String create= 'Создать';
 }

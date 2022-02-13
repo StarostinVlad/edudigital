@@ -1,5 +1,7 @@
+import 'dart:js';
 import 'dart:math';
 
+import 'package:edudigital/ApiClient.dart';
 import 'package:edudigital/account_page.dart';
 import 'package:edudigital/demo_screen.dart';
 import 'package:edudigital/main_screeen.dart';
@@ -14,12 +16,20 @@ import 'login_page.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   setUrlStrategy(PathUrlStrategy());
-  runApp(ChangeNotifierProvider<Data>(
-      create: (context) => Data(), child: MyApp()));
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider<Data>(create: (context) => Data()),
+      Provider<StudentStatisticData>(
+          create: (context) => StudentStatisticData()),
+      ChangeNotifierProvider<GroupData>(create: (context) => GroupData()),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class RoutesName {
   static const String home = '/';
+  static const String login = '/login';
   static const String main = '/main';
   static const String detail = '/detail';
   static const String trajectory = '/trajectory';
@@ -31,11 +41,15 @@ class RoutesName {
 }
 
 class MyApp extends StatelessWidget {
+  static bool isDesktop(BuildContext context) {
+    return MediaQuery.of(context).size.width >= 930;
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Edu-it',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -52,7 +66,7 @@ class MyApp extends StatelessWidget {
         accentColor: Color(0xff1800A2),
         fontFamily: 'arialblack',
       ),
-      // initialRoute: RoutesName.home,
+      initialRoute: RoutesName.home,
       // routes: {
       //   RoutesName.home: (context) => const LoginScreen(),
       //   RoutesName.main: (context) => const MainScreen(),
@@ -72,6 +86,8 @@ class MyApp extends StatelessWidget {
     print("/" + pathComponents[1]);
     switch ("/" + pathComponents[1]) {
       case RoutesName.home:
+        return MaterialPageRoute(builder: (context) => const MainScreen());
+      case RoutesName.login:
         return MaterialPageRoute(builder: (context) => const LoginScreen());
       case RoutesName.main:
         return MaterialPageRoute(builder: (context) => const MainScreen());
@@ -86,7 +102,19 @@ class MyApp extends StatelessWidget {
       case RoutesName.demoScreen:
         return MaterialPageRoute(builder: (context) => const DemoScreen());
       case RoutesName.teacher:
-        return MaterialPageRoute(builder: (context) => TeacherScreen());
+        return MaterialPageRoute(builder: (context) {
+          UserAgentClient().getGroups().then((value) {
+            if (value.isNotEmpty) {
+              context.read<GroupData>().refreshGroupsData(value);
+              UserAgentClient()
+                  .getGroupDetail(value.first.id)
+                  .then((groupDetail) {
+                context.read<GroupData>().refreshGroupDetailData(groupDetail);
+              });
+            }
+          });
+          return TeacherScreen();
+        });
       case RoutesName.student:
         return MaterialPageRoute(builder: (context) => StudentScreen());
       case RoutesName.inviteStudent:
