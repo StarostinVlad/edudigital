@@ -1,6 +1,3 @@
-import 'dart:js';
-import 'dart:math';
-
 import 'package:edudigital/ApiClient.dart';
 import 'package:edudigital/account_page.dart';
 import 'package:edudigital/demo_screen.dart';
@@ -15,7 +12,7 @@ import 'login_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  setUrlStrategy(PathUrlStrategy());
+  // setUrlStrategy(PathUrlStrategy());
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<Data>(create: (context) => Data()),
@@ -28,16 +25,16 @@ void main() {
 }
 
 class RoutesName {
-  static const String home = '/';
-  static const String login = '/login';
-  static const String main = '/main';
-  static const String detail = '/detail';
-  static const String trajectory = '/trajectory';
-  static const String testScreen = '/test_screen';
-  static const String demoScreen = '/demo_screen';
-  static const String teacher = '/teacher';
-  static const String student = '/student';
-  static const String inviteStudent = '/invite';
+  static const String home = '#/';
+  static const String login = '#/login';
+  static const String main = '#/main';
+  static const String detail = '#/detail';
+  static const String trajectory = '#/trajectory';
+  static const String testScreen = '#/test_screen';
+  static const String demoScreen = '#/demo_screen';
+  static const String teacher = '#/teacher';
+  static const String student = '#/student';
+  static const String inviteStudent = '#/invite';
 }
 
 class MyApp extends StatelessWidget {
@@ -64,7 +61,7 @@ class MyApp extends StatelessWidget {
         // accentColor: Color(0xff282828),
         primaryColor: Colors.white,
         accentColor: Color(0xff1800A2),
-        fontFamily: 'arialblack',
+        fontFamily: 'arial',
       ),
       initialRoute: RoutesName.home,
       // routes: {
@@ -83,8 +80,8 @@ class MyApp extends StatelessWidget {
 
   Route<dynamic> generateRoute(RouteSettings settings) {
     List<String> pathComponents = settings.name!.split('/');
-    print("/" + pathComponents[1]);
-    switch ("/" + pathComponents[1]) {
+    print("#/" + pathComponents[1]);
+    switch ("#/" + pathComponents[1]) {
       case RoutesName.home:
         return MaterialPageRoute(builder: (context) => const MainScreen());
       case RoutesName.login:
@@ -145,91 +142,6 @@ class Page404 extends StatelessWidget {
           style: Theme.of(context).textTheme.headline2,
         )),
       ),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

@@ -1163,8 +1163,11 @@ class Greetings extends StatelessWidget {
           color: Colors.blueGrey[50],
           shape: Border.all(color: Colors.blue),
           child: CustomText(
-            Constants.greetings_for_teach
-                .replaceAll('%name%', context.watch<Data>().getFullname),
+            context.watch<Data>().getProfileData!.role == "teacher"
+                ? Constants.greetings_for_teach
+                    .replaceAll('%name%', context.watch<Data>().getFullname)
+                : Constants.greetings_for_student
+                    .replaceAll('%name%', context.watch<Data>().getFullname),
             color: Colors.black,
             padding: 5.0,
           ),
@@ -1552,7 +1555,7 @@ class _TeacherMenuState extends State<TeacherMenu> {
           children: [
             Align(
               alignment: Alignment.bottomCenter,
-              child: Container(child: Image.asset("background2.png")),
+              child: Container(child: Image.asset("assets/background2.png")),
             ),
             ListView(children: [
               Padding(
@@ -1669,7 +1672,7 @@ class Menu extends StatelessWidget {
           children: [
             Align(
               alignment: Alignment.bottomCenter,
-              child: Container(child: Image.asset("background2.png")),
+              child: Container(child: Image.asset("assets/background2.png")),
             ),
             ListView(children: [
               Padding(

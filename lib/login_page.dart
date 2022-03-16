@@ -27,114 +27,56 @@ class LoginScreen extends StatelessWidget {
                   color: Theme.of(context).primaryColor,
                   child: Row(children: [
                     Container(
-                        color: Colors.white,
-                        width: (MediaQuery.of(context).size.width - 0) * 0.6,
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                        fit: BoxFit.fitHeight,
-                                        image: AssetImage(
-                                          'login_background2.png',
-                                        ))),
-                                child: Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 40, vertical: 30),
-                                    child: Flexible(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Row(children: [
-                                            Container(
-                                                height: 75.0,
-                                                child: Image.asset(
-                                                    'EIKFU_logo.png')),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  CustomText(
-                                                    'Казанский федеральный',
-                                                    fontSize: 20,
-                                                  ),
-                                                  CustomText(
-                                                    'УНИВЕРСИТЕТ',
-                                                    fontSize: 20,
-                                                  ),
-                                                  CustomText(
-                                                    'Елабужский институт',
-                                                    fontSize: 20,
-                                                  )
-                                                ],
-                                              ),
-                                            ),
-                                            CustomText(
-                                              'EDU-IT',
-                                              fontSize: 52,
-                                            ),
-                                          ]),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Система оценки',
-                                                textAlign: TextAlign.start,
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .primaryColor,
-                                                    fontSize: 46),
-                                              ),
-                                              Text(
-                                                'цифровых компетенций',
-                                                textAlign: TextAlign.start,
-                                                style: TextStyle(
-                                                    color: Theme.of(context)
-                                                        .primaryColor,
-                                                    fontSize: 46),
-                                              ),
-                                              CustomText(
-                                                'Онлайн-платформа для оценки и',
-                                                fontSize: 14,
-                                              ),
-                                              CustomText(
-                                                'развития цифровой компетентности студентов педагогических направлений',
-                                                fontSize: 14,
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                      width: (MediaQuery.of(context).size.width - 0) * 0.6,
+                      child: Column(
+                        children: [
+                          Container(
+                            height: (MediaQuery.of(context).size.height) * 0.8,
+                            decoration: BoxDecoration(
+                                image: DecorationImage(
+                                    fit: BoxFit.fitHeight,
+                                    image: AssetImage(
+                                      'assets/login_background2.png',
+                                    ))),
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 40, vertical: 30),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    TextOnTopLoginPage(),
+                                    TextOnLoginPage()
+                                  ],
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                child: Center(
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                          'Проект разработан при поддержки Фонда содействия инновациям'),
-                                      Container(
-                                          height: 50.0,
-                                          child: Image.asset('found.png'))
-                                    ],
-                                  ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              height:
+                                  (MediaQuery.of(context).size.height) * 0.1,
+                              color: Colors.white,
+                              child: Center(
+                                child: Column(
+                                  children: [
+                                    Text(
+                                        'Проект разработан при поддержки Фонда содействия инновациям'),
+                                    Container(
+                                        height: 50.0,
+                                        child: Image.asset('assets/found.png'))
+                                  ],
                                 ),
                               ),
-                            )
-                          ],
-                        )),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
                     Container(
                         width: (MediaQuery.of(context).size.width - 0) * 0.4,
                         child: LoginContent())
@@ -142,6 +84,86 @@ class LoginScreen extends StatelessWidget {
                 )
               : LoginContent(),
         ));
+  }
+}
+
+class TextOnTopLoginPage extends StatelessWidget {
+  const TextOnTopLoginPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Row(children: [
+        Container(height: 75.0, child: Image.asset('assets/EIKFU_logo.png')),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                'Казанский федеральный',
+                fontSize: 20,
+              ),
+              CustomText(
+                'УНИВЕРСИТЕТ',
+                fontSize: 20,
+              ),
+              CustomText(
+                'Елабужский институт',
+                fontSize: 20,
+              )
+            ],
+          ),
+        ),
+        Text(
+          'EDU-IT',
+          style: TextStyle(
+              fontWeight: ui.FontWeight.bold,
+              color: Theme.of(context).primaryColor,
+              fontSize: 54),
+        ),
+      ]),
+    );
+  }
+}
+
+class TextOnLoginPage extends StatelessWidget {
+  const TextOnLoginPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Система оценки',
+            textAlign: TextAlign.start,
+            style: TextStyle(
+                fontWeight: ui.FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+                fontSize: 46),
+          ),
+          Text(
+            'цифровых компетенций',
+            textAlign: TextAlign.start,
+            style: TextStyle(
+                fontWeight: ui.FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+                fontSize: 46),
+          ),
+          Text(
+            'Онлайн-платформа для оценки и',
+            style:
+                TextStyle(color: Theme.of(context).primaryColor, fontSize: 14),
+          ),
+          Text(
+            'развития цифровой компетентности студентов педагогических направлений',
+            style:
+                TextStyle(color: Theme.of(context).primaryColor, fontSize: 14),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -177,8 +199,11 @@ class LoginContent extends StatelessWidget {
             alignment: Alignment.centerLeft,
           ),
           Align(
-            child: CustomText('Демо-версия системы оценки',
-                color: Colors.blue, padding: 5.0),
+            child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: Text('Демо-версия системы оценки',
+                  style: TextStyle(color: Colors.blue)),
+            ),
             alignment: Alignment.centerLeft,
           ),
           Expanded(

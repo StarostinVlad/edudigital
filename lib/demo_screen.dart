@@ -1,6 +1,7 @@
 import 'dart:html';
 
 import 'package:edudigital/login_page.dart';
+import 'package:edudigital/main.dart';
 import 'package:flutter/material.dart';
 
 import 'ApiClient.dart';
@@ -19,126 +20,141 @@ class DemoScreen extends StatelessWidget {
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            Flexible(
-              flex: 1,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+        child: MyApp.isDesktop(context)
+            ? IntrinsicHeight(
+              child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Card(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                          side: BorderSide(width: 2, color: Colors.purple)),
-                      child: Container(
-                        height: 350,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Курс повышения уровня цифровой компетентности',
-                                style: Theme.of(context).textTheme.headline5,
-                              ),
-                              Text(
-                                '''• 72 академических часа
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: children(context)),
+            )
+            : ListView(
+                shrinkWrap: true,
+                children: children(context),
+              ),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+
+  children(BuildContext context) {
+    return <Widget>[
+      Expanded(
+        child: Element2(),
+      ),
+      Expanded(child: Element1()),
+    ];
+  }
+}
+
+class Element2 extends StatelessWidget {
+  const Element2({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              side: BorderSide(width: 2, color: Colors.purple)),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Курс повышения уровня цифровой компетентности',
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                Text(
+                  '''• 72 академических часа
 • Индивидуальное обучение или в группе
 • Личный наставник
 • Много практики
 • Диплом государственного образца
 Бонус: практика работы в системе EDU-IT''',
-                                style: Theme.of(context).textTheme.headline6,
-                              ),
-                              Text(
-                                '''Для того, чтоб получить программу обучения, нажмите на кнопку «Приобрести», укажите свою почту и в самое ближайшее время ожидайте всю подробную информацию''',
-                                style: Theme.of(context).textTheme.bodyText1,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    MaterialButton(
-                      color: Colors.purple,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      onPressed: () {
-                        showDialog<String>(
-                            context: context,
-                            builder: (BuildContext context) =>
-                                PurchaseDialog());
-                      },
-                      child: Text(
-                        'Приобрести',
-                      ),
-                    ),
-                  ],
+                  style: Theme.of(context).textTheme.headline6,
                 ),
-              ),
+                Text(
+                  '''Для того, чтоб получить программу обучения, нажмите на кнопку «Приобрести», укажите свою почту и в самое ближайшее время ожидайте всю подробную информацию''',
+                  style: Theme.of(context).textTheme.bodyText1,
+                ),
+              ],
             ),
-            Flexible(
-              flex: 1,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                        side: BorderSide(width: 2, color: Colors.purple)),
-                    child: Container(
-                      height: 350,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '''Курс наставничества по построению индивидуальной траектории обучения''',
-                              style: Theme.of(context).textTheme.headline5,
-                            ),
-                            Text(
-                              '''• 36 академических часа
+          ),
+        ),
+        MaterialButton(
+          color: Colors.purple,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          onPressed: () {
+            showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => PurchaseDialog());
+          },
+          child: Text(
+            'Приобрести',
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class Element1 extends StatelessWidget {
+  const Element1({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(10)),
+              side: BorderSide(width: 2, color: Colors.purple)),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '''Курс наставничества по построению индивидуальной траектории обучения''',
+                  style: Theme.of(context).textTheme.headline5,
+                ),
+                Text(
+                  '''• 36 академических часа
 • Индивидуальное обучение или в группе
 • Личный наставник
 • Много практики
 • Сертификат государственного образца
 Бонус: практика работы в системе EDU-IT''',
-                              style: Theme.of(context).textTheme.headline6,
-                            ),
-                            Text(
-                              '''Для того, чтоб получить программу обучения, нажмите на кнопку «Приобрести», укажите свою почту и в самое ближайшее время ожидайте всю подробную информацию''',
-                              style: Theme.of(context).textTheme.bodyText1,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  MaterialButton(
-                    color: Colors.purple,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10)),
-                    onPressed: () {
-                      showDialog<String>(
-                          context: context,
-                          builder: (BuildContext context) =>
-                              PurchaseDialog());
-                    },
-                    child: Text(
-                      'Приобрести',
-                    ),
-                  ),
-                ],
-              ),
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                Text(
+                  '''Для того, чтоб получить программу обучения, нажмите на кнопку «Приобрести», укажите свою почту и в самое ближайшее время ожидайте всю подробную информацию''',
+                  style: Theme.of(context).textTheme.bodyText1,
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        MaterialButton(
+          color: Colors.purple,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          onPressed: () {
+            showDialog<String>(
+                context: context,
+                builder: (BuildContext context) => PurchaseDialog());
+          },
+          child: Text(
+            'Приобрести',
+          ),
+        ),
+      ],
     );
   }
 }
@@ -243,8 +259,8 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
               });
             }
             if (_surnameError == null && _nameError == null) {
-              UserAgentClient().createGroup(
-                      _emailController.text, _fullnameController.text)
+              UserAgentClient()
+                  .createGroup(_emailController.text, _fullnameController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }
           },
