@@ -43,8 +43,7 @@ class LoginScreen extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 40, vertical: 30),
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
@@ -382,6 +381,11 @@ class _LoginFormState extends State<LoginForm> {
                         _enabled = true;
                         _errorMsg = "Неверный email или пароль";
                       });
+                  });
+                }).onError((error, stackTrace) {
+                  setState(() {
+                    _enabled = true;
+                    _errorMsg = error.toString();
                   });
                 });
               }

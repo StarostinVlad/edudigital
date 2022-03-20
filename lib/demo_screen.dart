@@ -260,7 +260,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
             }
             if (_surnameError == null && _nameError == null) {
               UserAgentClient()
-                  .createGroup(_emailController.text, _fullnameController.text)
+                  .createGroup(_emailController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }
           },

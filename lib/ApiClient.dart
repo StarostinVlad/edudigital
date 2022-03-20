@@ -93,16 +93,16 @@ class UserAgentClient {
     } else {
       // If the server did not return a 201 CREATED response,
       // then throw an exception.
-      return "error";
+      var json = jsonDecode(response.body);
+      throw CustomException(json["message"]);
     }
   }
 
-  Future<String> registry(
-      String login, String password, String name, String surname) async {
+  Future<String> registry(String groupId, String login, String password,
+      String name, String surname) async {
     (_client).withCredentials = true;
     final response = await _client.post(
-      Uri.parse(Constants.BASE_URL +
-          '/register/8c0fbac9-9fcf-48ce-9e6f-d358839dae1e'),
+      Uri.parse(Constants.BASE_URL + '/register/$groupId'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -194,10 +194,11 @@ class UserAgentClient {
     }
   }
 
-  Future<String?> createGroup(String name, String count) async {
+  Future<String?> createGroup(String name) async {
     (_client).withCredentials = true;
     final response = await _client.put(
-      Uri.parse(Constants.BASE_URL + '/api/v1/group'),
+      Uri.parse(Constants.BASE_URL + '/api/v1/groups'),
+      body: jsonEncode(<String, String>{"name": name}),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -355,6 +356,37 @@ class UserAgentClient {
     } else {
       throw Exception("Error");
     }
+  }
+
+  makeTestAvailable(String? groupId, String? testId) {}
+
+  Future removeImage() async {
+    (_client).withCredentials = true;
+    final response = await _client.delete(
+        Uri.parse(Constants.BASE_URL + '/api/v1/profile/image/'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      var json = jsonDecode(response.body);
+      return json.toString();
+    } else {
+      throw Exception("Error");
+    }
+  }
+}
+
+class CustomException implements Exception {
+  final String message;
+
+  CustomException(this.message);
+
+  @override
+  String toString() {
+    return message;
   }
 }
 

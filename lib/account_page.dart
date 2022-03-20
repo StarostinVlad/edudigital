@@ -11,8 +11,11 @@ import 'package:edudigital/login_page.dart';
 import 'package:edudigital/storage.dart';
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
 import 'package:timer_builder/timer_builder.dart';
+
+import 'package:flutter/services.dart';
 
 import 'main.dart';
 
@@ -347,7 +350,7 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
       appBar: CustomAppBar(
         height: 50,
       ),
-      drawer: MyApp.isDesktop(context)
+      drawer: !MyApp.isDesktop(context)
           ? Drawer(
               child: TeacherMenu(),
             )
@@ -707,48 +710,25 @@ class CreateGroup extends StatefulWidget {
 
 class _CreateGroupState extends State<CreateGroup> {
   var _nameController = TextEditingController();
-  var _quantityController = TextEditingController();
 
-  String? _nameError, _quantityError;
+  String? _nameError;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text('Создать группу'),
       content: Form(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  controller: _nameController,
-                  decoration: InputDecoration(
-                    errorText: _nameError,
-                    focusColor: Theme.of(context).accentColor,
-                    border: OutlineInputBorder(),
-                    hintText: 'Название группы',
-                  ),
-                ),
-              ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextFormField(
+            controller: _nameController,
+            decoration: InputDecoration(
+              errorText: _nameError,
+              focusColor: Theme.of(context).accentColor,
+              border: OutlineInputBorder(),
+              hintText: 'Название группы',
             ),
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: TextFormField(
-                  controller: _quantityController,
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    errorText: _quantityError,
-                    focusColor: Theme.of(context).accentColor,
-                    border: OutlineInputBorder(),
-                    hintText: 'Кол-во студентов',
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
       actions: <Widget>[
@@ -760,28 +740,28 @@ class _CreateGroupState extends State<CreateGroup> {
           onPressed: () {
             setState(() {
               _nameError = null;
-              _quantityError = null;
             });
             if (_nameController.text.length < 2) {
               setState(() {
                 _nameError = "Название должно быть не короче 2х символов";
               });
             }
-            int quantity = int.parse(_quantityController.text);
-            if (quantity < 1) {
-              setState(() {
-                _quantityError = "Количество не должно быть меньше 1";
+            if (_nameError == null) {
+              UserAgentClient().createGroup(_nameController.text).then((value) {
+                Navigator.pop(context, 'OK');
+                UserAgentClient().getGroups().then((value) {
+                  if (value.isNotEmpty) {
+                    context.read<GroupData>().refreshGroupsData(value);
+                    UserAgentClient()
+                        .getGroupDetail(value.first.id)
+                        .then((groupDetail) {
+                      context
+                          .read<GroupData>()
+                          .refreshGroupDetailData(groupDetail);
+                    });
+                  }
+                });
               });
-            }
-            if (quantity > 15) {
-              setState(() {
-                _quantityError = "Количество не должно быть больше 15";
-              });
-            }
-            if (_quantityError == null && _nameError == null) {
-              UserAgentClient()
-                  .createGroup(_nameController.text, _quantityController.text)
-                  .then((value) => Navigator.pop(context, 'OK'));
             }
           },
           child: const Text(Constants.create),
@@ -812,10 +792,30 @@ class _InviteStudentState extends State<InviteStudent> {
     return base64UrlEncode(values);
   }
 
+  Future<void> _copyToClipboard(String url) async {
+    await Clipboard.setData(
+        ClipboardData(text: "https://edu-it.online/#/invite/$url/"));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Copied to clipboard'),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Пригласить студента'),
+      title: Row(
+        children: [
+          const Text('Пригласить студента'),
+          IconButton(
+            icon: Icon(Icons.share),
+            onPressed: () {
+              _copyToClipboard(Provider.of<GroupData>(context, listen: false)
+                  .groupDetail!
+                  .id);
+            },
+          )
+        ],
+      ),
       content: Form(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -926,10 +926,19 @@ class _InviteStudentState extends State<InviteStudent> {
                 _passwordError == null &&
                 _surnameError == null &&
                 _nameError == null) {
+              var groupDetail =
+                  Provider.of<GroupData>(context, listen: false).groupDetail;
+              print("groupId: ${groupDetail?.id}");
               UserAgentClient()
-                  .registry(_emailController.text, _passwordController.text,
-                      _nameController.text, _surnameController.text)
+                  .registry(
+                      groupDetail!.id,
+                      _emailController.text,
+                      _passwordController.text,
+                      _nameController.text,
+                      _surnameController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
+            } else {
+              print("another exception");
             }
           },
           child: const Text('OK'),
@@ -968,15 +977,10 @@ class TeacherContent extends StatelessWidget {
       itemBuilder: (BuildContext context, int index) {
         return MaterialButton(
             onPressed: () {
-              Navigator.popAndPushNamed(context, RoutesName.detail);
+              Navigator.pushNamed(context, RoutesName.detail);
             },
             child: ListTile(
-              leading: members[index].image.isNotEmpty
-                  ? Image.memory(base64Decode(members[index].image))
-                  : Icon(
-                      Icons.account_circle,
-                      size: 50,
-                    ),
+              leading: Constants.showProfileImage(members[index]),
               title: CustomText(
                 '${members[index].name} ${members[index].surname}',
                 color: Colors.black,
@@ -1043,7 +1047,7 @@ class GroupsList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              'Группа 001',
+              Provider.of<GroupData>(context, listen: false).groupDetail!.name,
               style: Theme.of(context).textTheme.headline5,
             ),
           ),
@@ -1142,9 +1146,11 @@ class _AccessLevelDialogState extends State<AccessLevelDialog> {
         ),
         TextButton(
           onPressed: () {
+            var groupDetail =
+                Provider.of<GroupData>(context, listen: false).groupDetail;
             if (_surnameError == null && _nameError == null) {
               UserAgentClient()
-                  .createGroup(_nameController.text, _surnameController.text)
+                  .makeTestAvailable(groupDetail?.id, _surnameController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }
           },
@@ -1618,7 +1624,11 @@ class _TeacherMenuState extends State<TeacherMenu> {
       itemBuilder: (BuildContext context, int index) {
         return MaterialButton(
           onPressed: () {
-            Navigator.popAndPushNamed(context, RoutesName.teacher);
+            UserAgentClient()
+                .getGroupDetail(groups[index].id)
+                .then((groupDetail) {
+              context.read<GroupData>().refreshGroupDetailData(groupDetail);
+            });
           },
           child: ListTile(
             title: CustomText(
@@ -1638,27 +1648,36 @@ class ProfileAvatar extends StatelessWidget {
     var user = context.watch<Data>().getProfileData;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 50.0),
-      child: IconButton(
-        onPressed: () {
-          UserAgentClient().uploadImage().then((value) => UserAgentClient()
-              .getProfile()
-              .then((value) => context.read<Data>().refreshProfileData(value)));
-        },
-        iconSize: 50,
-        icon: user!.image.isNotEmpty
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(25),
-                child: Image.memory(
-                  base64Decode(user.image.toString()),
-                  width: 50,
-                  height: 50,
-                  fit: BoxFit.cover,
+      child: Center(
+        child: Container(
+          width: 55,
+          height: 55,
+          child: Stack(children: [
+            InkWell(
+              onTap: () {
+                UserAgentClient().uploadImage().then((value) =>
+                    UserAgentClient().getProfile().then((value) =>
+                        context.read<Data>().refreshProfileData(value)));
+              },
+              child: Constants.showProfileImage(user),
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: InkWell(
+                onTap: () {
+                  UserAgentClient().removeImage().then((value) =>
+                      UserAgentClient().getProfile().then((value) =>
+                          context.read<Data>().refreshProfileData(value)));
+                },
+                child: Icon(
+                  Icons.cancel,
+                  size: 15,
+                  color: Theme.of(context).primaryColor,
                 ),
-              )
-            : Icon(
-                Icons.account_circle,
-                color: Colors.white,
               ),
+            ),
+          ]),
+        ),
       ),
     );
   }
