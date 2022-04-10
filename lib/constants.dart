@@ -3,31 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 class Constants {
-  static showProfileImage(var user) {
-    try {
-      return user!.image.isNotEmpty
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(25),
-              child: Image.memory(
-                base64Decode(user.image.toString()),
-                errorBuilder: (context, error, stackTrace) {
-                  print("$stackTrace");
-                  return Icon(Icons.account_circle);
-                },
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-              ),
-            )
-          : throw Exception();
-    } catch (exception) {
-      print(exception);
-      return Icon(
-        Icons.account_circle,
-        color: Colors.white,
-      );
-    }
-  }
 
   // static const String BASE_URL = "https://10.81.16.61:80";
   static const String BASE_URL = "https://edu-it.online";

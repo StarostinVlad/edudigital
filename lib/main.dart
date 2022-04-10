@@ -1,5 +1,5 @@
 import 'package:edudigital/ApiClient.dart';
-import 'package:edudigital/account_page.dart';
+import 'package:edudigital/teacher_page.dart';
 import 'package:edudigital/demo_screen.dart';
 import 'package:edudigital/main_screeen.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +9,8 @@ import 'package:provider/provider.dart';
 import 'Models.dart';
 import 'invite_screen.dart';
 import 'login_page.dart';
+import 'question_page.dart';
+import 'student_page.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,38 +44,16 @@ class MyApp extends StatelessWidget {
     return MediaQuery.of(context).size.width >= 930;
   }
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Edu-it',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        // primaryColor: Color(0xfff2aa00),
-        // accentColor: Color(0xff282828),
         primaryColor: Colors.white,
         accentColor: Color(0xff1800A2),
         fontFamily: 'arial',
       ),
       initialRoute: RoutesName.home,
-      // routes: {
-      //   RoutesName.home: (context) => const LoginScreen(),
-      //   RoutesName.main: (context) => const MainScreen(),
-      //   RoutesName.detail: (context) => const StudentDetailScreen(),
-      //   RoutesName.trajectory: (context) => const StudentTrajectoryScreen(),
-      //   RoutesName.testScreen: (context) => const TestScreen(),
-      //   RoutesName.demoScreen: (context) => const DemoScreen(),
-      //   RoutesName.teacher: (context) => TeacherScreen(),
-      //   RoutesName.student: (context) => StudentScreen(),
-      // },
       onGenerateRoute: generateRoute,
     );
   }

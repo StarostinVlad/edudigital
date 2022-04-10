@@ -1,4 +1,4 @@
-import 'package:edudigital/account_page.dart';
+import 'package:edudigital/teacher_page.dart';
 import 'package:flutter/material.dart';
 
 class InviteStudentScreen extends StatefulWidget {
