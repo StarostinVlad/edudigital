@@ -975,19 +975,38 @@ class TeacherContent extends StatelessWidget {
       shrinkWrap: true,
       itemCount: members.length,
       itemBuilder: (BuildContext context, int index) {
-        return MaterialButton(
-            onPressed: () {
-              Navigator.pushNamed(context, RoutesName.detail);
-            },
-            child: ListTile(
-              leading: Constants.showProfileImage(members[index]),
-              title: CustomText(
-                '${members[index].name} ${members[index].surname}',
-                color: Colors.black,
-                padding: 15.0,
-                fontSize: 14.0,
+        return Row(
+          children: [
+            Expanded(
+              child: MaterialButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, RoutesName.detail);
+                },
+                child: ListTile(
+                  leading: Constants.showProfileImage(members[index]),
+                  title: CustomText(
+                    '${members[index].name} ${members[index].surname}',
+                    color: Colors.black,
+                    padding: 15.0,
+                    fontSize: 14.0,
+                  ),
+                ),
               ),
-            ));
+            ),
+            members[index].status == Status.done
+                ? IconButton(
+                    onPressed: () {
+                      context.read<GroupData>().changeMemberStatus(index);
+                      UserAgentClient()
+                          .removeStudentFromGroup(members[index].id)
+                          .then((value) {
+                        context.read<GroupData>().removeMember(index);
+                      });
+                    },
+                    icon: Icon(Icons.cancel))
+                : CircularProgressIndicator()
+          ],
+        );
       },
     );
   }
@@ -1563,7 +1582,7 @@ class _TeacherMenuState extends State<TeacherMenu> {
               alignment: Alignment.bottomCenter,
               child: Container(child: Image.asset("assets/background2.png")),
             ),
-            ListView(children: [
+            ListView(shrinkWrap: true, children: [
               Padding(
                 padding: EdgeInsets.only(top: 20.0),
                 child: Center(
@@ -1622,20 +1641,41 @@ class _TeacherMenuState extends State<TeacherMenu> {
       shrinkWrap: true,
       itemCount: groups.length,
       itemBuilder: (BuildContext context, int index) {
-        return MaterialButton(
-          onPressed: () {
-            UserAgentClient()
-                .getGroupDetail(groups[index].id)
-                .then((groupDetail) {
-              context.read<GroupData>().refreshGroupDetailData(groupDetail);
-            });
-          },
-          child: ListTile(
-            title: CustomText(
-              groups[index].name,
-              fontSize: 12,
+        return Row(
+          children: [
+            Expanded(
+              child: MaterialButton(
+                onPressed: () {
+                  UserAgentClient()
+                      .getGroupDetail(groups[index].id)
+                      .then((groupDetail) {
+                    context
+                        .read<GroupData>()
+                        .refreshGroupDetailData(groupDetail);
+                  });
+                },
+                child: ListTile(
+                  title: CustomText(
+                    groups[index].name,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
             ),
-          ),
+            groups[index].status == Status.done
+                ? IconButton(
+                    onPressed: () {
+                      context.read<GroupData>().changeGroupStatus(index);
+                      UserAgentClient()
+                          .removeGroup(groups[index].id)
+                          .then((value) {
+                        context.read<GroupData>().removeGroup(index);
+                      });
+                    },
+                    icon: Icon(Icons.cancel),
+                  )
+                : CircularProgressIndicator()
+          ],
         );
       },
     );

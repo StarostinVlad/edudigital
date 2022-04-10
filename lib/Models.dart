@@ -63,7 +63,27 @@ class GroupData with ChangeNotifier {
   }
 
   void refreshGroupDetailData(GroupDetail groupDetail) {
-    _groupDetail= groupDetail;
+    _groupDetail = groupDetail;
+    notifyListeners();
+  }
+
+  void removeMember(int index) {
+    _groupDetail?.members.removeAt(index);
+    notifyListeners();
+  }
+
+  void changeMemberStatus(int index) {
+    _groupDetail?.members[index].status = Status.loading;
+    notifyListeners();
+  }
+
+  void removeGroup(int index) {
+    _groups.removeAt(index);
+    notifyListeners();
+  }
+
+  void changeGroupStatus(int index) {
+    _groups[index].status = Status.loading;
     notifyListeners();
   }
 }
@@ -83,8 +103,11 @@ class GroupDetail {
         }).toList();
 }
 
+enum Status { loading, done }
+
 class Group {
   final String id, link, name;
+  Status status = Status.done;
 
   Group(this.id, this.link, this.name);
 
@@ -100,6 +123,7 @@ class User {
   final String image;
   final String name;
   final String surname, groupId, groupTitle, role;
+  Status status = Status.done;
 
   User(this.email, this.id, this.image, this.name, this.surname, this.groupId,
       this.groupTitle, this.role);

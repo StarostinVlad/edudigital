@@ -377,6 +377,16 @@ class UserAgentClient {
       throw Exception("Error");
     }
   }
+
+  Future removeStudentFromGroup(String id) async {
+    //todo add realization
+    await Future.delayed(Duration(seconds: 2));
+  }
+
+  Future removeGroup(String id) async {
+    //todo add realization
+    await Future.delayed(Duration(seconds: 2));
+  }
 }
 
 class CustomException implements Exception {
