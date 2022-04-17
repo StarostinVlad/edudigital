@@ -350,32 +350,15 @@ class _LoginFormState extends State<LoginForm> {
                   _enabled = false;
                 });
                 print('$_login $_password');
-                // Constants.isStudent = Random().nextBool();
-                // print(Constants.isStudent);
-                // Navigator.popAndPushNamed(
-                //     context,
-                //     Constants.isStudent
-                //         ? RoutesName.teacher
-                //         : RoutesName.student);
-                UserAgentClient().auth(_login!, _password!).then((value) {
-                  UserAgentClient().getProfile().then((value) {
-                    context.read<Data>().refreshProfileData(value);
-                    // Constants.isStudent = false;
-                    if (value.role == 'student')
+                UserAgentClient().auth(_login!, _password!).then((loginValue) {
+                  UserAgentClient().getProfile().then((profileValue) {
+                    context.read<Data>().refreshProfileData(profileValue);
+                    if (profileValue.role == 'student')
                       Navigator.popAndPushNamed(context, "/student");
-                    if (value.role == 'teacher') {
-                      // UserAgentClient().getGroups().then((value) {
-                      //   if (value.isNotEmpty) {
-                      //     // context.read<GroupData>().refreshGroupsData(value);
-                      //     UserAgentClient().getGroupDetail(value.first.id).then(
-                      //         (groupDetail) => context
-                      //             .read<GroupData>()
-                      //             .refreshGroupDetailData(groupDetail));
-                      //   }
-                      // });
+                    if (profileValue.role == 'teacher') {
                       Navigator.popAndPushNamed(context, "/teacher");
                     }
-                    if (value.role == 'admin')
+                    if (profileValue.role == 'admin')
                       Navigator.popAndPushNamed(context, "/admin");
                     else
                       setState(() {

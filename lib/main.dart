@@ -88,6 +88,11 @@ class MyApp extends StatelessWidget {
                   .then((groupDetail) {
                 context.read<GroupData>().refreshGroupDetailData(groupDetail);
               });
+              UserAgentClient()
+                  .getGroupAvailableTests(value.first.id)
+                  .then((levels) {
+                context.read<GroupData>().refreshLevelsData(levels);
+              });
             }
           });
           return TeacherScreen();

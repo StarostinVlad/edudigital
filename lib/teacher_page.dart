@@ -252,6 +252,11 @@ class _CreateGroupState extends State<CreateGroup> {
                           .read<GroupData>()
                           .refreshGroupDetailData(groupDetail);
                     });
+                    UserAgentClient()
+                        .getGroupAvailableTests(value.first.id)
+                        .then((levels) {
+                      context.read<GroupData>().refreshLevelsData(levels);
+                    });
                   }
                 });
               });
@@ -514,19 +519,24 @@ class GroupsList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              Provider.of<GroupData>(context, listen: false).groupDetail!.name,
+              context.watch<GroupData>().groupDetail!.name,
               style: Theme.of(context).textTheme.headline5,
             ),
           ),
-          Level(1),
-          Level(2),
-          Level(3),
+          ListView(
+            shrinkWrap: true,
+            children: levelList(context.watch<GroupData>().levels),
+          )
         ]),
       );
 }
 
+levelList(List<LevelTeacher> levels) {
+  return levels.map((level) => Level(level)).toList();
+}
+
 class Level extends StatelessWidget {
-  final int level;
+  final LevelTeacher level;
 
   const Level(this.level, {Key? key}) : super(key: key);
 
@@ -536,20 +546,15 @@ class Level extends StatelessWidget {
         child: Column(
       children: [
         CustomText(
-          'Уровень ${level - 1}',
+          level.levelName,
           color: Colors.blue,
           fontSize: 16.0,
         ),
         Padding(
           padding: EdgeInsets.all(10.0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AccessLevel('1'),
-              AccessLevel('2'),
-              AccessLevel('3'),
-            ],
-          ),
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: level.tests.map((test) => AccessLevel(test)).toList()),
         )
       ],
     ));
@@ -557,9 +562,9 @@ class Level extends StatelessWidget {
 }
 
 class AccessLevel extends StatefulWidget {
-  final String title;
+  final TestTeacherData test;
 
-  const AccessLevel(this.title, {Key? key}) : super(key: key);
+  const AccessLevel(this.test, {Key? key}) : super(key: key);
 
   @override
   _AccessLevelState createState() => _AccessLevelState();
@@ -571,14 +576,17 @@ class _AccessLevelState extends State<AccessLevel> {
     return Container(
       padding: EdgeInsets.all(5.0),
       child: MaterialButton(
-        color: Theme.of(context).accentColor,
+        color: widget.test.isAvailable
+            ? Colors.green
+            : Theme.of(context).accentColor,
         onPressed: () {
           showDialog<String>(
               context: context,
-              builder: (BuildContext context) => AccessLevelDialog());
+              builder: (BuildContext context) =>
+                  AccessLevelDialog(widget.test.id));
         },
         child: Text(
-          widget.title,
+          widget.test.name,
           style: TextStyle(color: Colors.white),
         ),
       ),
@@ -587,18 +595,15 @@ class _AccessLevelState extends State<AccessLevel> {
 }
 
 class AccessLevelDialog extends StatefulWidget {
-  const AccessLevelDialog({Key? key}) : super(key: key);
+  final String testId;
+
+  const AccessLevelDialog(this.testId, {Key? key}) : super(key: key);
 
   @override
   _AccessLevelDialogState createState() => _AccessLevelDialogState();
 }
 
 class _AccessLevelDialogState extends State<AccessLevelDialog> {
-  var _nameController = TextEditingController();
-  var _surnameController = TextEditingController();
-
-  String? _nameError, _surnameError;
-
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -615,11 +620,13 @@ class _AccessLevelDialogState extends State<AccessLevelDialog> {
           onPressed: () {
             var groupDetail =
                 Provider.of<GroupData>(context, listen: false).groupDetail;
-            if (_surnameError == null && _nameError == null) {
+            UserAgentClient()
+                .makeTestAvailable(groupDetail?.id, widget.testId)
+                .then((value) {
               UserAgentClient()
-                  .makeTestAvailable(groupDetail?.id, _surnameController.text)
+                  .getGroupAvailableTests(groupDetail!.id)
                   .then((value) => Navigator.pop(context, 'OK'));
-            }
+            });
           },
           child: const Text('Предоставить'),
         ),
@@ -920,6 +927,11 @@ class _TeacherMenuState extends State<TeacherMenu> {
                     context
                         .read<GroupData>()
                         .refreshGroupDetailData(groupDetail);
+                  });
+                  UserAgentClient()
+                      .getGroupAvailableTests(groups[index].id)
+                      .then((levels) {
+                    context.read<GroupData>().refreshLevelsData(levels);
                   });
                 },
                 child: ListTile(

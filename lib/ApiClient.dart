@@ -67,9 +67,6 @@ class UserAgentClient {
   }
 
   Future<String> auth(String login, String password) async {
-    // return Random().nextBool() ? "Студент" : "Учитель";
-    // return "Учитель";
-    // return "Студент";
     (_client).withCredentials = true;
     final response = await _client.post(
       Uri.parse(Constants.BASE_URL + '/login'),
@@ -77,19 +74,15 @@ class UserAgentClient {
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        // "email": "user6_email@mail.ru",
-        // "password": "12345678"
         "email": login,
         "password": password
       }),
     );
-    print(response.headers);
+    print(response.body.toString());
 
     if (response.statusCode == 200) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
       var json = jsonDecode(response.body);
-      return json['message']['role'];
+      return json['message'];
     } else {
       // If the server did not return a 201 CREATED response,
       // then throw an exception.
@@ -358,7 +351,48 @@ class UserAgentClient {
     }
   }
 
-  makeTestAvailable(String? groupId, String? testId) {}
+  Future<List<LevelTeacher>> getGroupAvailableTests(String id) async {
+    (_client).withCredentials = true;
+    final response = await _client.get(
+        Uri.parse(Constants.BASE_URL + '/api/v1/tests/$id'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      List<dynamic> json = jsonDecode(response.body);
+      return json.map((e) => LevelTeacher.fromJson(e)).toList();
+    } else {
+      throw Exception("Error");
+    }
+  }
+
+  Future makeTestAvailable(String? groupId, String? testId) async {
+    (_client).withCredentials = true;
+    final response = await _client.post(
+        Uri.parse(Constants.BASE_URL + '/api/v1/test/set_available'),
+        body: jsonEncode(
+            <String, String?>{"group_id": groupId, "test_id": testId}),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      var json = jsonDecode(response.body);
+      return json['message'];
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      // throw Exception("Error");
+      return "error";
+    }
+  }
 
   Future removeImage() async {
     (_client).withCredentials = true;

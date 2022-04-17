@@ -50,12 +50,20 @@ class StudentStatisticData {
 
 class GroupData with ChangeNotifier {
   List<Group> _groups = [];
+  List<LevelTeacher> _levels = [];
 
   GroupDetail? _groupDetail;
 
   GroupDetail? get groupDetail => _groupDetail;
 
   List<Group> get groups => _groups;
+
+  List<LevelTeacher> get levels => _levels;
+
+  void refreshLevelsData(List<LevelTeacher> levels) {
+    _levels = levels;
+    notifyListeners();
+  }
 
   void refreshGroupsData(List<Group> groups) {
     _groups = groups;
@@ -88,8 +96,35 @@ class GroupData with ChangeNotifier {
   }
 }
 
+class LevelTeacher {
+  final String levelName;
+  final List<TestTeacherData> tests;
+
+  LevelTeacher(this.levelName, this.tests);
+
+  LevelTeacher.fromJson(Map<String, dynamic> json)
+      : levelName = json['level_name'],
+        tests = (json['tests'] as List).map((testJson) {
+          print(json);
+          return TestTeacherData.fromJson(testJson);
+        }).toList();
+}
+
+class TestTeacherData {
+  final String id;
+  final bool isAvailable;
+  final String name;
+
+  TestTeacherData(this.id, this.isAvailable, this.name);
+
+  TestTeacherData.fromJson(Map<String, dynamic> json)
+      : isAvailable = json['is_available'],
+        id = json['id'],
+        name = json['name'];
+}
+
 class GroupDetail {
-  final String id, link, name;
+  String id, link, name = "";
   final List<User> members;
 
   GroupDetail(this.id, this.link, this.name, this.members);
