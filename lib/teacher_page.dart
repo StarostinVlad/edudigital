@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
 
 import 'package:flutter/services.dart';
+import 'package:responsive_grid_list/responsive_grid_list.dart';
 
 import 'main.dart';
 import 'util_widgets.dart';
@@ -493,8 +494,9 @@ class TeacherContent extends StatelessWidget {
               ),
             ),
             members[index].status == Status.done
-                ? IconButton(
-                    onPressed: () {
+                ? InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () {
                       context.read<GroupData>().changeMemberStatus(index);
                       UserAgentClient()
                           .removeStudentFromGroup(members[index].id)
@@ -502,8 +504,13 @@ class TeacherContent extends StatelessWidget {
                         context.read<GroupData>().removeMember(index);
                       });
                     },
-                    icon: Icon(Icons.cancel))
-                : CircularProgressIndicator()
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Icon(Icons.cancel, size: 15),
+                    ),
+                  )
+                : SizedBox(
+                    width: 20, height: 20, child: CircularProgressIndicator())
           ],
         );
       },
@@ -543,7 +550,8 @@ class Level extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: Column(
+        child: ListView(
+      shrinkWrap: true,
       children: [
         CustomText(
           level.levelName,
@@ -552,8 +560,14 @@ class Level extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.all(10.0),
-          child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: ResponsiveGridList(
+              horizontalGridSpacing: 5,
+              horizontalGridMargin: 5,
+              verticalGridMargin: 5,
+              minItemWidth: 200,
+              minItemsPerRow: 1,
+              maxItemsPerRow: 5,
+              shrinkWrap: true,
               children: level.tests.map((test) => AccessLevel(test)).toList()),
         )
       ],
@@ -916,46 +930,57 @@ class _TeacherMenuState extends State<TeacherMenu> {
       shrinkWrap: true,
       itemCount: groups.length,
       itemBuilder: (BuildContext context, int index) {
-        return Row(
-          children: [
-            Expanded(
-              child: MaterialButton(
-                onPressed: () {
-                  UserAgentClient()
-                      .getGroupDetail(groups[index].id)
-                      .then((groupDetail) {
-                    context
-                        .read<GroupData>()
-                        .refreshGroupDetailData(groupDetail);
-                  });
-                  UserAgentClient()
-                      .getGroupAvailableTests(groups[index].id)
-                      .then((levels) {
-                    context.read<GroupData>().refreshLevelsData(levels);
-                  });
-                },
-                child: ListTile(
-                  title: CustomText(
-                    groups[index].name,
-                    fontSize: 12,
+        return Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Row(
+            children: [
+              Expanded(
+                child: MaterialButton(
+                  onPressed: () {
+                    UserAgentClient()
+                        .getGroupDetail(groups[index].id)
+                        .then((groupDetail) {
+                      context
+                          .read<GroupData>()
+                          .refreshGroupDetailData(groupDetail);
+                    });
+                    UserAgentClient()
+                        .getGroupAvailableTests(groups[index].id)
+                        .then((levels) {
+                      context.read<GroupData>().refreshLevelsData(levels);
+                    });
+                  },
+                  child: ListTile(
+                    title: CustomText(
+                      groups[index].name,
+                      fontSize: 12,
+                    ),
                   ),
                 ),
               ),
-            ),
-            groups[index].status == Status.done
-                ? IconButton(
-                    onPressed: () {
-                      context.read<GroupData>().changeGroupStatus(index);
-                      UserAgentClient()
-                          .removeGroup(groups[index].id)
-                          .then((value) {
-                        context.read<GroupData>().removeGroup(index);
-                      });
-                    },
-                    icon: Icon(Icons.cancel),
-                  )
-                : CircularProgressIndicator()
-          ],
+              groups[index].status == Status.done
+                  ? InkWell(
+                      onTap: () {
+                        context.read<GroupData>().changeGroupStatus(index);
+                        UserAgentClient()
+                            .removeGroup(groups[index].id)
+                            .then((value) {
+                          context.read<GroupData>().removeGroup(index);
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(2.0),
+                        child: Icon(
+                          Icons.cancel,
+                          size: 15,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: 20, height: 20, child: CircularProgressIndicator())
+            ],
+          ),
         );
       },
     );

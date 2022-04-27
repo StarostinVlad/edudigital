@@ -413,13 +413,49 @@ class UserAgentClient {
   }
 
   Future removeStudentFromGroup(String id) async {
-    //todo add realization
-    await Future.delayed(Duration(seconds: 2));
+    (_client).withCredentials = true;
+    final response = await _client.delete(
+        Uri.parse(Constants.BASE_URL + '/api/v1/group/user/$id'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      var json = jsonDecode(response.body);
+      return json['message'];
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      // throw Exception("Error");
+      return "error";
+    }
   }
 
   Future removeGroup(String id) async {
-    //todo add realization
-    await Future.delayed(Duration(seconds: 2));
+    (_client).withCredentials = true;
+    final response = await _client.delete(
+        Uri.parse(Constants.BASE_URL + '/api/v1/group/$id'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      var json = jsonDecode(response.body);
+      return json['message'];
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      // throw Exception("Error");
+      return "error";
+    }
   }
 }
 
