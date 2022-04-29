@@ -6,11 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
 
-
 import 'main.dart';
 import 'student_page.dart';
 import 'util_widgets.dart';
-
 
 class TestScreen extends StatefulWidget {
   const TestScreen({Key? key}) : super(key: key);
@@ -26,18 +24,18 @@ class _TestScreenState extends State<TestScreen> {
       appBar: CustomAppBar(),
       drawer: !MyApp.isDesktop(context)
           ? Drawer(
-        child: Menu(),
-      )
+              child: Menu(),
+            )
           : null,
       body: !MyApp.isDesktop(context)
           ? QuestionScreen()
           : Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(width: 200, child: Menu()),
-          Flexible(child: QuestionScreen()),
-        ],
-      ),
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(width: 200, child: Menu()),
+                Flexible(child: QuestionScreen()),
+              ],
+            ),
     );
   }
 }
@@ -98,7 +96,6 @@ class _OtpTimerState extends State<OtpTimer> {
   }
 }
 
-
 class QuestionScreen extends StatefulWidget {
   QuestionScreen({Key? key}) : super(key: key);
 
@@ -107,72 +104,62 @@ class QuestionScreen extends StatefulWidget {
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
-  Future<QuestionData> _question() => UserAgentClient().getNextQuestion();
+  getNextQuestion(BuildContext context) {
+    UserAgentClient().getNextQuestion().then((questionData) {
+      print("questionData: ${questionData.title}");
+      Provider.of<Data>(context, listen: false).refreshQuestionData(questionData);
+    });
+  }
+
+  @override
+  void initState() {
+    getNextQuestion(context);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         OtpTimer(),
-        FutureBuilder(
-            future: _question(),
-            builder: (context, AsyncSnapshot<QuestionData> snapshot) {
-              if (snapshot.hasError) {
-                if (snapshot.error is TestIsOverException) {
-                  print(snapshot.error);
-                  Future.delayed(Duration(milliseconds: 200)).then((value) =>
-                      Navigator.popAndPushNamed(context, RoutesName.student));
-                }
-                return LoadingError(onPressed: () {});
-              }
-              if (snapshot.connectionState != ConnectionState.done)
-                return Center(child: CircularProgressIndicator());
-              if (snapshot.hasData) {
-                if (snapshot.data != null) {
-                  print('snapshot: ${snapshot.data}');
-                  var questionData = snapshot.data!;
-                  Provider.of<Data>(context, listen: false)
-                      .refreshQuestionData(questionData);
-                  return Column(
-                    children: [
-                      QuestionContainer(questionData),
-                      MaterialButton(
-                        color: Theme.of(context).accentColor,
-                        onPressed: () {
-                          UserAgentClient()
-                              .giveAnswerForQuestion(
-                              questionData.id,
-                              Provider.of<Data>(context, listen: false)
-                                  .getUserAnswerId)
-                              .then((value) => setState(() {}));
-                        },
-                        child: Text('Далее'),
-                      ),
-                    ],
-                  );
-                }
-              }
-              return Center(child: CircularProgressIndicator());
-            }),
+        Column(
+          children: [
+            QuestionContainer(context.watch<Data>().getQuestionData),
+            MaterialButton(
+              color: Theme.of(context).accentColor,
+              onPressed: () {
+                UserAgentClient()
+                    .giveAnswerForQuestion(
+                        context.watch<Data>().getQuestionData!.id,
+                        context.watch<Data>().getUserAnswerId)
+                    .then((value) => getNextQuestion(context));
+              },
+              child: Text('Далее'),
+            ),
+          ],
+        )
       ],
     );
   }
 }
 
 class QuestionContainer extends StatelessWidget {
-  final QuestionData _questionData;
+  final QuestionData? _questionData;
 
   const QuestionContainer(this._questionData, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    print("questionData 2:$_questionData");
+    if (_questionData == null)
+      return Center(child: CircularProgressIndicator());
     return Column(children: [
       Container(
           height: 50,
           width: double.infinity,
           color: Colors.purple,
           child: CustomText(
-            _questionData.title,
+            _questionData!.title,
             fontSize: 32,
             color: Colors.white,
           )),
@@ -180,17 +167,17 @@ class QuestionContainer extends StatelessWidget {
         padding: const EdgeInsets.all(40.0),
         child: Center(
             child: Text(
-              _questionData.body,
-              style: Theme.of(context).textTheme.headline5,
-            )),
+          _questionData!.title,
+          style: Theme.of(context).textTheme.headline5,
+        )),
       ),
-      AnswersContainer(_questionData.answers!),
+      AnswersContainer(_questionData!.answers),
     ]);
   }
 }
 
 class AnswersContainer extends StatefulWidget {
-  final List<AnswerData> _answers;
+  final List<AnswerData>? _answers;
 
   const AnswersContainer(this._answers, {Key? key}) : super(key: key);
 
@@ -205,7 +192,7 @@ class _AnswersContainerState extends State<AnswersContainer> {
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
-      itemCount: widget._answers.length,
+      itemCount: widget._answers!.length,
       itemBuilder: (BuildContext context, int index) => Container(
         padding: EdgeInsets.all(10.0),
         child: Align(
@@ -216,7 +203,7 @@ class _AnswersContainerState extends State<AnswersContainer> {
               groupValue: val,
               onChanged: (value) {
                 Provider.of<Data>(context, listen: false)
-                    .refreshUserAnswerId(widget._answers[index].id);
+                    .refreshUserAnswerId(widget._answers![index].id);
                 setState(() {
                   val = value;
                 });
@@ -224,7 +211,7 @@ class _AnswersContainerState extends State<AnswersContainer> {
               activeColor: Colors.green,
             ),
             title: Text(
-              widget._answers[index].body,
+              widget._answers![index].body,
               style: Theme.of(context).textTheme.headline6,
             ),
           ),

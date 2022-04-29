@@ -227,16 +227,16 @@ class UserAndStatistic {
 }
 
 class QuestionData {
-  final String body, id, title;
+  final String id, title, type;
   final List<AnswerData>? answers;
   String answerId = '';
 
-  QuestionData(this.body, this.id, this.title, this.answers);
+  QuestionData(this.id, this.title, this.type, this.answers);
 
   QuestionData.fromJson(Map<String, dynamic> json)
-      : body = json['body'],
-        id = json['id'],
+      : id = json['id'],
         title = json['title'],
+        type = json['type'],
         answers = (json['answers'] as List).map((answerJson) {
           print('json: $json');
           return AnswerData.fromJson(answerJson);
