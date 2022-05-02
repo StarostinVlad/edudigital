@@ -9,6 +9,15 @@ class Data with ChangeNotifier {
 
   QuestionData? _questionData;
 
+  DateTime? _startTime;
+
+  DateTime get getStartTime {
+    if (_startTime != null)
+      return _startTime!;
+    else
+      return DateTime.now();
+  }
+
   User? get getProfileData => _user;
 
   QuestionData? get getQuestionData => _questionData;
@@ -24,13 +33,28 @@ class Data with ChangeNotifier {
 
   void refreshQuestionData(QuestionData questionData) {
     _questionData = questionData;
-    // notifyListeners();
+    notifyListeners();
   }
 
-  String get getUserAnswerId => _questionData!.answerId;
+  List<String> get getUserAnswersId => _questionData!.answersId;
 
-  void refreshUserAnswerId(String id) {
-    _questionData!.answerId = id;
+  void addUserAnswerId(String id) {
+    _questionData?.answersId.add(id);
+    notifyListeners();
+  }
+
+  void refreshQuestionStatus(bool loading) {
+    _questionData?.status = loading;
+    notifyListeners();
+  }
+
+  void removeUserAnswerId(String id) {
+    _questionData?.answersId.remove(id);
+    notifyListeners();
+  }
+
+  void refreshStartTime(startTime) {
+    _startTime = DateTime.parse(startTime);
     notifyListeners();
   }
 }
@@ -194,18 +218,16 @@ class TestData {
   final String id;
   final bool? isCompleted;
   final String name;
-  final int correct, total;
+  final double result;
 
-  TestData(this.available, this.id, this.isCompleted, this.name, this.correct,
-      this.total);
+  TestData(this.available, this.id, this.isCompleted, this.name, this.result);
 
   TestData.fromJson(Map<String, dynamic> json)
       : available = json['available'],
         id = json['id'],
         isCompleted = json['is_completed'],
         name = json['name'],
-        correct = json['result'] == null ? 0 : json['result']['correct'] ?? 0,
-        total = json['result'] == null ? 1 : json['result']['total'] ?? 1;
+        result = json['result'] == null ? 0 : json['result'];
 }
 
 class ResultData {
@@ -228,8 +250,9 @@ class UserAndStatistic {
 
 class QuestionData {
   final String id, title, type;
+  bool status = false;
   final List<AnswerData>? answers;
-  String answerId = '';
+  List<String> answersId = [];
 
   QuestionData(this.id, this.title, this.type, this.answers);
 
@@ -245,6 +268,7 @@ class QuestionData {
 
 class AnswerData {
   final String body, id, image;
+  bool added = false;
 
   AnswerData(this.body, this.id, this.image);
 

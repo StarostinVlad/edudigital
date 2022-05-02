@@ -32,4 +32,6 @@ class Constants {
   static const String watchTrajectory = 'Моя траектория развития';
 
   static const String create = 'Создать';
+
+  static const String testIsOver = 'Тест завершен!';
 }

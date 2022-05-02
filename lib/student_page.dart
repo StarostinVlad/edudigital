@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:html';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:edudigital/ApiClient.dart';
@@ -112,16 +113,20 @@ class EduProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // double progress = test.correct / test.total;
-    double progress = test.total / 10;
+    double progress = test.result;
+    // double progress = test.total / 10;
+    var isCompleted = false;
+    if (test.isCompleted != null) isCompleted = test.isCompleted!;
     return MaterialButton(
-      onPressed: test.available
+      onPressed: test.available && !isCompleted
           ? () {
-              UserAgentClient()
-                  .startTest(test.id)
-                  .then((value) =>
-                      Navigator.popAndPushNamed(context, RoutesName.testScreen))
-                  .onError((error, stackTrace) {
+              UserAgentClient().startTest(test.id).then((value) {
+                context.read<Data>().refreshStartTime(value);
+                UserAgentClient().getNextQuestion().then((questionData) {
+                  context.read<Data>().refreshQuestionData(questionData);
+                  Navigator.popAndPushNamed(context, RoutesName.testScreen);
+                });
+              }).onError((error, stackTrace) {
                 if (error is TestIsAlredyStartedException)
                   showDialog<String>(
                       context: context,
@@ -132,21 +137,19 @@ class EduProgressIndicator extends StatelessWidget {
               });
             }
           : null,
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 5.0),
-        child: Row(children: [
-          Expanded(
-            child: LinearProgressIndicator(
-              backgroundColor: Colors.grey,
-              minHeight: 15,
-              valueColor: AlwaysStoppedAnimation<Color>(checkColor(progress)),
-              value: progress,
-            ),
+      child: ListTile(
+          leading: Icon(
+            isCompleted ? Icons.done : Icons.clear,
+            color: isCompleted ? Colors.green : Colors.red,
           ),
-          Padding(
-              padding: EdgeInsets.all(5.0), child: Text('${progress * 100}%'))
-        ]),
-      ),
+          title: LinearProgressIndicator(
+            backgroundColor: Colors.grey,
+            minHeight: 15,
+            valueColor: AlwaysStoppedAnimation<Color>(checkColor(progress)),
+            value: progress,
+          ),
+          subtitle: Text(test.name),
+          trailing: Text('$progress%')),
     );
   }
 
@@ -247,7 +250,8 @@ class StudentScreenLoaded extends StatelessWidget {
                 children: [
                   Container(width: 200, child: Menu()),
                   Expanded(
-                    child: Column(
+                    child: ListView(
+                      shrinkWrap: true,
                       children: [
                         MaterialButton(
                           onPressed: () {},
@@ -566,20 +570,6 @@ class _StudentContentState extends State<StudentContent> {
                       .map((levelData) {
                 print(levelData.name);
                 return EduProgressLevel(level: levelData, isOpen: true);
-                // Padding(
-                //     padding: EdgeInsets.symmetric(horizontal: 5.0),
-                //     child: MaterialButton(
-                //       onPressed: () {
-                //         UserAgentClient().available().then((value) {
-                //           print(value);
-                //           Navigator.popAndPushNamed(
-                //               context, RoutesName.trajectory);
-                //         });
-                //       },
-                //       color: Theme.of(context).accentColor,
-                //       child: CustomText("Траектория"),
-                //     ),
-                //   );
               }).toList(),
             ),
             ElevatedButton(

@@ -73,10 +73,7 @@ class UserAgentClient {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{
-        "email": login,
-        "password": password
-      }),
+      body: jsonEncode(<String, String>{"email": login, "password": password}),
     );
     print(response.body.toString());
 
@@ -254,7 +251,7 @@ class UserAgentClient {
       Repository().setEndTime(DateTime.now().add(Duration(minutes: 30)));
 
       var json = jsonDecode(response.body);
-      return json.toString();
+      return json["exp_time"];
     } else {
       // If the server did not return a 201 CREATED response,
       // then throw an exception.
@@ -290,10 +287,16 @@ class UserAgentClient {
   }
 
   Future giveAnswerForQuestion(String id, String getUserAnswerId) async {
+    List<String> answers = [];
+    answers.add(getUserAnswerId);
+    return giveAnswersForQuestion(id, answers);
+  }
+
+  Future giveAnswersForQuestion(String id, List<String> getUserAnswerId) async {
     (_client).withCredentials = true;
     final response = await _client.post(
         Uri.parse(Constants.BASE_URL + '/api/v1/question/$id/give_answer'),
-        body: jsonEncode(<String, String>{"answer_id": getUserAnswerId}),
+        body: jsonEncode(<String, List<String>>{"answers": getUserAnswerId}),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         });
@@ -301,14 +304,9 @@ class UserAgentClient {
     print(response.body);
 
     if (response.statusCode == 200) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
       var json = jsonDecode(response.body);
       return json.toString();
     } else {
-      // If the server did not return a 201 CREATED response,
-      // then throw an exception.
-      // throw Exception("Error");
       return "error";
     }
   }

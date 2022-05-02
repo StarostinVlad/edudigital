@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:html';
 import 'package:edudigital/ApiClient.dart';
 import 'package:edudigital/Models.dart';
 import 'package:edudigital/storage.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
 
+import 'constants.dart';
 import 'main.dart';
 import 'student_page.dart';
 import 'util_widgets.dart';
@@ -41,6 +43,10 @@ class _TestScreenState extends State<TestScreen> {
 }
 
 class OtpTimer extends StatefulWidget {
+  DateTime startTime;
+
+  OtpTimer(this.startTime);
+
   @override
   _OtpTimerState createState() => _OtpTimerState();
 }
@@ -68,10 +74,12 @@ class _OtpTimerState extends State<OtpTimer> {
 
   @override
   void initState() {
-    Repository().getEndTime().then((value) {
-      timerMaxSeconds = value.difference(DateTime.now()).inSeconds;
-      startTimeout();
-    });
+    // Repository().getEndTime().then((value) {
+    //   timerMaxSeconds = value.difference(DateTime.now()).inSeconds;
+    //   startTimeout();
+    // });
+    timerMaxSeconds = widget.startTime.difference(DateTime.now()).inSeconds;
+    startTimeout();
     super.initState();
   }
 
@@ -104,75 +112,144 @@ class QuestionScreen extends StatefulWidget {
 }
 
 class _QuestionScreenState extends State<QuestionScreen> {
-  getNextQuestion(BuildContext context) {
-    UserAgentClient().getNextQuestion().then((questionData) {
-      print("questionData: ${questionData.title}");
-      Provider.of<Data>(context, listen: false).refreshQuestionData(questionData);
-    });
-  }
-
-  @override
-  void initState() {
-    getNextQuestion(context);
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        OtpTimer(),
-        Column(
-          children: [
-            QuestionContainer(context.watch<Data>().getQuestionData),
-            MaterialButton(
-              color: Theme.of(context).accentColor,
-              onPressed: () {
-                UserAgentClient()
-                    .giveAnswerForQuestion(
-                        context.watch<Data>().getQuestionData!.id,
-                        context.watch<Data>().getUserAnswerId)
-                    .then((value) => getNextQuestion(context));
-              },
-              child: Text('Далее'),
-            ),
-          ],
-        )
+        OtpTimer(context.watch<Data>().getStartTime),
+        Expanded(child: QuestionContainer())
       ],
     );
   }
 }
 
 class QuestionContainer extends StatelessWidget {
-  final QuestionData? _questionData;
+  getNextQuestion(BuildContext context) {
+    UserAgentClient().getNextQuestion().catchError((error, stackTrace) {
+      showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => TestIsOverDialog());
+    }).then((questionData) {
+      print("questionData: ${questionData.title}");
+      Provider.of<Data>(context, listen: false)
+          .refreshQuestionData(questionData);
+    });
+  }
 
-  const QuestionContainer(this._questionData, {Key? key}) : super(key: key);
+  const QuestionContainer({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    print("questionData 2:$_questionData");
-    if (_questionData == null)
+    var questionData = context.watch<Data>().getQuestionData;
+    print("questionData 2:$questionData");
+    if (questionData == null || questionData.status)
       return Center(child: CircularProgressIndicator());
-    return Column(children: [
-      Container(
-          height: 50,
-          width: double.infinity,
-          color: Colors.purple,
-          child: CustomText(
-            _questionData!.title,
-            fontSize: 32,
-            color: Colors.white,
-          )),
+    return ListView(shrinkWrap: true, children: [
+      // Container(
+      //     height: 50,
+      //     width: double.infinity,
+      //     color: Colors.purple,
+      //     child: CustomText(S
+      //       _questionData!.title,
+      //       fontSize: 32,
+      //       color: Colors.white,
+      //     )),
       Padding(
         padding: const EdgeInsets.all(40.0),
         child: Center(
             child: Text(
-          _questionData!.title,
+          questionData.title,
           style: Theme.of(context).textTheme.headline5,
         )),
       ),
-      AnswersContainer(_questionData!.answers),
+      if (questionData.type == "QuestionTypes.SINGLE_SELECT")
+        AnswersContainer(questionData.answers)
+      else
+        MultipleAnswersContainer(questionData.answers),
+      MaterialButton(
+        color: Theme.of(context).accentColor,
+        onPressed: () {
+          context.read<Data>().refreshQuestionStatus(true);
+          print(
+              "questionID: ${questionData.id} answerId:${questionData.answersId}");
+          UserAgentClient()
+              .giveAnswersForQuestion(questionData.id, questionData.answersId)
+              .then((value) {
+            getNextQuestion(context);
+          });
+        },
+        child: Text('Далее'),
+      ),
     ]);
+  }
+}
+
+class TestIsOverDialog extends StatelessWidget {
+  const TestIsOverDialog({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text(Constants.attention),
+      content: const Text(Constants.testIsOver),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context, 'OK');
+            Navigator.popAndPushNamed(context, RoutesName.student);
+          },
+          child: const Text('OK'),
+        ),
+      ],
+    );
+  }
+}
+
+class MultipleAnswersContainer extends StatefulWidget {
+  final List<AnswerData>? _answers;
+
+  const MultipleAnswersContainer(this._answers, {Key? key}) : super(key: key);
+
+  @override
+  State<MultipleAnswersContainer> createState() =>
+      _MultipleAnswersContainerState();
+}
+
+class _MultipleAnswersContainerState extends State<MultipleAnswersContainer> {
+  List<String> answers = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: widget._answers!.length,
+        itemBuilder: (BuildContext context, int index) {
+          var answer = widget._answers![index];
+          return Container(
+            padding: EdgeInsets.all(10.0),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: CheckboxListTile(
+                  title: Text(answer.body),
+                  value: answer.added,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      answer.added = value!;
+                    });
+                    if (value != null) {
+                      if (value) {
+                        answers.add(answer.id);
+                        context.read<Data>().addUserAnswerId(answer.id);
+                      }
+                      if (!value) {
+                        answers.remove(answer.id);
+                        context.read<Data>().removeUserAnswerId(answer.id);
+                      }
+                    }
+                  },
+                )),
+          );
+        });
   }
 }
 
@@ -189,6 +266,12 @@ class _AnswersContainerState extends State<AnswersContainer> {
   var val;
 
   @override
+  void initState() {
+    val = -1;
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
@@ -203,7 +286,7 @@ class _AnswersContainerState extends State<AnswersContainer> {
               groupValue: val,
               onChanged: (value) {
                 Provider.of<Data>(context, listen: false)
-                    .refreshUserAnswerId(widget._answers![index].id);
+                    .addUserAnswerId(widget._answers![index].id);
                 setState(() {
                   val = value;
                 });
