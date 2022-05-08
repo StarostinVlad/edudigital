@@ -17,7 +17,7 @@ class _InviteStudentScreenState extends State<InviteStudentScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).accentColor,
-        title: Text('EduDigital'),
+        title: Text('Edu-it'),
       ),
       body: Container(
         child: Center(

@@ -120,9 +120,9 @@ class EduProgressIndicator extends StatelessWidget {
     return MaterialButton(
       onPressed: test.available && !isCompleted
           ? () {
-              UserAgentClient().startTest(test.id).then((value) {
+              ApiClient().startTest(test.id).then((value) {
                 context.read<Data>().refreshStartTime(value);
-                UserAgentClient().getNextQuestion().then((questionData) {
+                ApiClient().getNextQuestion().then((questionData) {
                   context.read<Data>().refreshQuestionData(questionData);
                   Navigator.popAndPushNamed(context, RoutesName.testScreen);
                 });
@@ -138,10 +138,11 @@ class EduProgressIndicator extends StatelessWidget {
             }
           : null,
       child: ListTile(
-          leading: Icon(
-            isCompleted ? Icons.done : Icons.clear,
-            color: isCompleted ? Colors.green : Colors.red,
-          ),
+          leading: getStatus(test.available, isCompleted),
+          // Icon(
+          //     isCompleted ? Icons.done : Icons.clear,
+          //     color: isCompleted ? Colors.green : Colors.red,
+          //   ),
           title: LinearProgressIndicator(
             backgroundColor: Colors.grey,
             minHeight: 15,
@@ -149,7 +150,7 @@ class EduProgressIndicator extends StatelessWidget {
             value: progress,
           ),
           subtitle: Text(test.name),
-          trailing: Text('$progress%')),
+          trailing: Text('${progress * 100}%')),
     );
   }
 
@@ -162,6 +163,19 @@ class EduProgressIndicator extends StatelessWidget {
       return Colors.green;
     else
       return Colors.grey;
+  }
+
+  getStatus(bool available, bool isCompleted) {
+    var status = "--";
+    if (!available)
+      status = "Недоступен";
+    else {
+      if (!isCompleted)
+        status = "Доступен";
+      else
+        status = "Пройден";
+    }
+    return Text(status);
   }
 }
 
@@ -188,7 +202,7 @@ class AnotherTestAlreadyStartedDialog extends StatelessWidget {
 class StudentScreen extends StatelessWidget {
   const StudentScreen({Key? key}) : super(key: key);
 
-  Future<List<LevelData>> _loadData() => UserAgentClient().available();
+  Future<List<LevelData>> _loadData() => ApiClient().available();
 
   @override
   Widget build(BuildContext context) => FutureBuilder(

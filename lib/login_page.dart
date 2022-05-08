@@ -350,8 +350,8 @@ class _LoginFormState extends State<LoginForm> {
                   _enabled = false;
                 });
                 print('$_login $_password');
-                UserAgentClient().auth(_login!, _password!).then((loginValue) {
-                  UserAgentClient().getProfile().then((profileValue) {
+                ApiClient().auth(_login!, _password!).then((loginValue) {
+                  ApiClient().getProfile().then((profileValue) {
                     context.read<Data>().refreshProfileData(profileValue);
                     if (profileValue.role == 'student')
                       Navigator.popAndPushNamed(context, "/student");
@@ -462,7 +462,7 @@ class _ForgetPasswordState extends State<ForgetPassword> {
               });
             }
             if (_emailError == null) {
-              UserAgentClient()
+              ApiClient()
                   .forgetPassword(_emailController.text)
                   .then((value) => Navigator.pop(context, 'OK'));
             }

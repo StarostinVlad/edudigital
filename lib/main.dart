@@ -80,15 +80,15 @@ class MyApp extends StatelessWidget {
         return MaterialPageRoute(builder: (context) => const DemoScreen());
       case RoutesName.teacher:
         return MaterialPageRoute(builder: (context) {
-          UserAgentClient().getGroups().then((value) {
+          ApiClient().getGroups().then((value) {
             if (value.isNotEmpty) {
               context.read<GroupData>().refreshGroupsData(value);
-              UserAgentClient()
+              ApiClient()
                   .getGroupDetail(value.first.id)
                   .then((groupDetail) {
                 context.read<GroupData>().refreshGroupDetailData(groupDetail);
               });
-              UserAgentClient()
+              ApiClient()
                   .getGroupAvailableTests(value.first.id)
                   .then((levels) {
                 context.read<GroupData>().refreshLevelsData(levels);

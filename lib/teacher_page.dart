@@ -184,7 +184,7 @@ class _RecomendationDialogState extends State<RecomendationDialog> {
               });
             }
             if (_recomendationError == null) {
-              UserAgentClient.sendRecomendation(_recomendationController.text)
+              ApiClient.sendRecomendation(_recomendationController.text)
                   .then((value) => Navigator.pop(context, 'Отправить'));
             }
           },
@@ -241,19 +241,19 @@ class _CreateGroupState extends State<CreateGroup> {
               });
             }
             if (_nameError == null) {
-              UserAgentClient().createGroup(_nameController.text).then((value) {
+              ApiClient().createGroup(_nameController.text).then((value) {
                 Navigator.pop(context, 'OK');
-                UserAgentClient().getGroups().then((value) {
+                ApiClient().getGroups().then((value) {
                   if (value.isNotEmpty) {
                     context.read<GroupData>().refreshGroupsData(value);
-                    UserAgentClient()
+                    ApiClient()
                         .getGroupDetail(value.first.id)
                         .then((groupDetail) {
                       context
                           .read<GroupData>()
                           .refreshGroupDetailData(groupDetail);
                     });
-                    UserAgentClient()
+                    ApiClient()
                         .getGroupAvailableTests(value.first.id)
                         .then((levels) {
                       context.read<GroupData>().refreshLevelsData(levels);
@@ -428,7 +428,7 @@ class _InviteStudentState extends State<InviteStudent> {
               var groupDetail =
                   Provider.of<GroupData>(context, listen: false).groupDetail;
               print("groupId: ${groupDetail?.id}");
-              UserAgentClient()
+              ApiClient()
                   .registry(
                       groupDetail!.id,
                       _emailController.text,
@@ -498,7 +498,7 @@ class TeacherContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     onTap: () {
                       context.read<GroupData>().changeMemberStatus(index);
-                      UserAgentClient()
+                      ApiClient()
                           .removeStudentFromGroup(members[index].id)
                           .then((value) {
                         context.read<GroupData>().removeMember(index);
@@ -634,10 +634,10 @@ class _AccessLevelDialogState extends State<AccessLevelDialog> {
           onPressed: () {
             var groupDetail =
                 Provider.of<GroupData>(context, listen: false).groupDetail;
-            UserAgentClient()
+            ApiClient()
                 .makeTestAvailable(groupDetail?.id, widget.testId)
                 .then((value) {
-              UserAgentClient()
+              ApiClient()
                   .getGroupAvailableTests(groupDetail!.id)
                   .then((value) => Navigator.pop(context, 'OK'));
             });
@@ -937,14 +937,14 @@ class _TeacherMenuState extends State<TeacherMenu> {
               Expanded(
                 child: MaterialButton(
                   onPressed: () {
-                    UserAgentClient()
+                    ApiClient()
                         .getGroupDetail(groups[index].id)
                         .then((groupDetail) {
                       context
                           .read<GroupData>()
                           .refreshGroupDetailData(groupDetail);
                     });
-                    UserAgentClient()
+                    ApiClient()
                         .getGroupAvailableTests(groups[index].id)
                         .then((levels) {
                       context.read<GroupData>().refreshLevelsData(levels);
@@ -962,7 +962,7 @@ class _TeacherMenuState extends State<TeacherMenu> {
                   ? InkWell(
                       onTap: () {
                         context.read<GroupData>().changeGroupStatus(index);
-                        UserAgentClient()
+                        ApiClient()
                             .removeGroup(groups[index].id)
                             .then((value) {
                           context.read<GroupData>().removeGroup(index);

@@ -15,7 +15,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
-    UserAgentClient().getProfile().then((value) {
+    ApiClient().getProfile().then((value) {
       context.read<Data>().refreshProfileData(value);
 
       switch (value.role) {

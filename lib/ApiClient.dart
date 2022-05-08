@@ -10,23 +10,23 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart' as http;
 
-class UserAgentClient {
+class ApiClient {
   final BrowserClient _client = (http.Client() as BrowserClient);
 
-  static UserAgentClient? _instance;
+  static ApiClient? _instance;
 
   Map<String, String> headers = {
     'Content-Type': 'application/json; charset=UTF-8',
   };
 
-  UserAgentClient._internal() {
+  ApiClient._internal() {
     _instance = this;
     (_client).withCredentials = true;
   }
 
-  factory UserAgentClient() {
+  factory ApiClient() {
     print(_instance);
-    return _instance ?? UserAgentClient._internal();
+    return _instance ?? ApiClient._internal();
   }
 
   Future<String> logout() async {

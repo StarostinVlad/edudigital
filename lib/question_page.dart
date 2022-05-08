@@ -125,7 +125,7 @@ class _QuestionScreenState extends State<QuestionScreen> {
 
 class QuestionContainer extends StatelessWidget {
   getNextQuestion(BuildContext context) {
-    UserAgentClient().getNextQuestion().catchError((error, stackTrace) {
+    ApiClient().getNextQuestion().catchError((error, stackTrace) {
       showDialog<String>(
           context: context,
           builder: (BuildContext context) => TestIsOverDialog());
@@ -172,7 +172,7 @@ class QuestionContainer extends StatelessWidget {
           context.read<Data>().refreshQuestionStatus(true);
           print(
               "questionID: ${questionData.id} answerId:${questionData.answersId}");
-          UserAgentClient()
+          ApiClient()
               .giveAnswersForQuestion(questionData.id, questionData.answersId)
               .then((value) {
             getNextQuestion(context);

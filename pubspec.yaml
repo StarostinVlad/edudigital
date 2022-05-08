@@ -67,6 +67,9 @@ flutter:
     - assets/login_background.jpg
     - assets/login_background2.png
     - assets/EIKFU_logo.png
+    - assets/right_hand.png
+    - assets/left_hand.png
+    - assets/two_hand.png
     - assets/no_acc_image.jpg
   fonts:
     - family: arialblack

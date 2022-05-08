@@ -17,7 +17,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: Theme.of(context).accentColor,
       title: Text(
-        'EduDigital',
+        'Edu-IT',
         style: TextStyle(color: Theme.of(context).primaryColor),
       ),
       actions: [
@@ -27,7 +27,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: InkWell(
               child: Text("Выйти"),
               onTap: () {
-                UserAgentClient().logout();
+                ApiClient().logout();
                 Navigator.popAndPushNamed(context, RoutesName.login);
               },
             ),
@@ -92,8 +92,9 @@ class ProfileAvatar extends StatelessWidget {
           child: Stack(children: [
             InkWell(
               onTap: () {
-                UserAgentClient().uploadImage().then((value) =>
-                    UserAgentClient().getProfile().then((value) =>
+                ApiClient().uploadImage().then((value) => ApiClient()
+                    .getProfile()
+                    .then((value) =>
                         context.read<Data>().refreshProfileData(value)));
               },
               child: showProfileImage(user),
@@ -102,8 +103,9 @@ class ProfileAvatar extends StatelessWidget {
               alignment: Alignment.topRight,
               child: InkWell(
                 onTap: () {
-                  UserAgentClient().removeImage().then((value) =>
-                      UserAgentClient().getProfile().then((value) =>
+                  ApiClient().removeImage().then((value) => ApiClient()
+                      .getProfile()
+                      .then((value) =>
                           context.read<Data>().refreshProfileData(value)));
                 },
                 child: Icon(
