@@ -208,8 +208,29 @@ class ApiClient {
     }
   }
 
-  static sendRecomendation(String text) {
-    //todo sendRecomendation
+  Future sendRecomendation(String text, String studentId) async {
+    (_client).withCredentials = true;
+    final response = await _client.post(
+      Uri.parse(Constants.BASE_URL + '/api/v1/comments/'),
+      body: jsonEncode(
+          <String, String>{"comment_text": text, "student_id": studentId}),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    );
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      var json = jsonDecode(response.body);
+      return json['message'];
+    } else if (response.statusCode == 403) {
+      throw NotLoginException('Not login!');
+    } else {
+      throw Exception('Another exception');
+    }
   }
 
   Future<User> getProfile() async {
@@ -453,6 +474,63 @@ class ApiClient {
       // then throw an exception.
       // throw Exception("Error");
       return "error";
+    }
+  }
+
+  Future<List<Comments>> getRecomendation([String? id]) async {
+    (_client).withCredentials = true;
+    String url = "/api/v1/comments/";
+    if(id!=null)
+      url = '/api/v1/comments/$id';
+    final response = await _client.get(
+        Uri.parse(Constants.BASE_URL + url),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      List<dynamic> json = jsonDecode(response.body);
+      return json.map((e) => Comments.fromJson(e)).toList();
+    } else {
+      throw Exception("Error");
+    }
+  }
+
+  Future<List<StudentResult>> getStudentStatistic() async {
+    (_client).withCredentials = true;
+    final response = await _client.get(
+        Uri.parse(Constants.BASE_URL + '/api/v1/results'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      List<dynamic> json = jsonDecode(response.body);
+      var result = json.map((e) => StudentResult.fromJson(e)).toList();
+      return result;
+    } else {
+      throw Exception("Error");
+    }
+  }
+
+  void removeComment(String id) async {
+    (_client).withCredentials = true;
+    final response = await _client.delete(
+        Uri.parse(Constants.BASE_URL + '/api/v1/comments/$id'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      return null;
+    } else {
+      throw Exception("Error");
     }
   }
 }

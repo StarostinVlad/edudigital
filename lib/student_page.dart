@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:html';
-import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:edudigital/ApiClient.dart';
 import 'package:edudigital/Models.dart';
@@ -303,182 +301,195 @@ class StudentScreenLoaded extends StatelessWidget {
   }
 }
 
-class Recomendation extends StatelessWidget {
-  const Recomendation({Key? key}) : super(key: key);
+class StudentComments extends StatelessWidget {
+  const StudentComments({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Container(
-          height: 200,
-          child: Card(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(50)),
-                side: BorderSide(width: 2, color: Colors.purple)),
-            child: Padding(
-              padding: EdgeInsets.all(10),
-              child: Text(
-                '(Здесь сообщение от преподавателя)',
-                style: Theme.of(context).textTheme.headline6,
-              ),
-            ),
-          ),
-        ),
-        Container(
-          height: 200,
-          child: Card(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(100)),
-                side: BorderSide(width: 2, color: Colors.purple)),
-            child: Padding(
-              padding: EdgeInsets.all(10),
-              child: Text(
-                '(Здесь сообщение от преподавателя)',
-                style: Theme.of(context).textTheme.headline6,
-              ),
-            ),
-          ),
-        ),
-        Container(
-          height: 200,
-          child: Card(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(100)),
-                side: BorderSide(width: 2, color: Colors.purple)),
-            child: Padding(
-              padding: EdgeInsets.all(10),
-              child: Text(
-                '(Здесь сообщение от преподавателя)',
-                style: Theme.of(context).textTheme.headline6,
-              ),
-            ),
-          ),
+    var comments = context.watch<Data>().getComments;
+    return AlertDialog(
+      title: const Text("Рекомендации от преподавателя"),
+      content: comments.isEmpty
+          ? Center(child: Text("Рекомендации отсутствуют"))
+          : Container(
+              width: double.maxFinite,
+              child: ListView.builder(
+                  itemCount: comments.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        height: 200,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30),
+                          border:
+                              Border.all(width: 5, color: Colors.deepPurple),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text(
+                            comments[index].comment,
+                            style: Theme.of(context).textTheme.headline6,
+                          ),
+                        ),
+                      ),
+                    );
+                  })),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context, 'Cancel');
+          },
+          child: const Text('OK'),
         ),
       ],
     );
   }
 }
 
-class StudentStatistic extends StatelessWidget {
-  const StudentStatistic({Key? key}) : super(key: key);
+class StudentStatisticItem extends StatelessWidget {
+  const StudentStatisticItem({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    var statistic = context.watch<Data>().getStatistic;
+    if (statistic.isEmpty)
+      return Center(
+        child: Text("Статистика отсутствует"),
+      );
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.0),
+      padding: EdgeInsets.symmetric(horizontal: 5.0),
       child: ListView(
-        children: [
-          Text(
-            'Результаты по отдельным компетенциям',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.headline4,
-          ),
-          StudentStatisticItem(level: 1),
-          StudentStatisticItem(level: 2),
-          StudentStatisticItem(level: 3),
-        ],
+        shrinkWrap: false,
+        children: statistic.map((e) {
+          print("statistic item:$e");
+          return StatisticItem(e);
+        }).toList(),
       ),
     );
   }
 }
 
-class StudentStatisticItem extends StatelessWidget {
-  final int level;
+class StatisticItem extends StatelessWidget {
+  final StudentResult statistic;
 
-  const StudentStatisticItem({Key? key, required this.level}) : super(key: key);
+  const StatisticItem(this.statistic, {Key? key}) : super(key: key);
 
-  children(context) {
+  row(BuildContext context, Groups groups) {
     return [
-      Flexible(
-        flex: 2,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                '$level уровень: 54% (Базовый)',
-                style: Theme.of(context).textTheme.headline5,
-              ),
-            ),
-            Table(
-              border: TableBorder(
-                  verticalInside: BorderSide(
-                      width: 1, color: Colors.black, style: BorderStyle.solid)),
-              children: [
-                TableRow(
-                    children:
-                        row(context, type: 1, percent: Random().nextInt(100))),
-                TableRow(
-                    children:
-                        row(context, type: 2, percent: Random().nextInt(100))),
-                TableRow(
-                    children:
-                        row(context, type: 3, percent: Random().nextInt(100))),
-                TableRow(
-                    children:
-                        row(context, type: 4, percent: Random().nextInt(100))),
-              ],
-            ),
-          ],
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.name,
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
         ),
       ),
-      Flexible(
-        flex: 1,
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Container(
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(width: 5, color: Colors.deepPurple),
-            ),
-            child: Padding(
-              padding: EdgeInsets.all(10),
-              child: Text(
-                '(Здесь сообщение от преподавателя)',
-                style: Theme.of(context).textTheme.headline6,
-              ),
-            ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.base != null ? "${groups.base}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.advanced != null ? "${groups.advanced}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.professional != null ? "${groups.professional}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "${groups.total!}",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
           ),
         ),
       ),
     ];
   }
 
-  row(context, {required int type, required int percent}) {
+  List<Widget> header(BuildContext context) {
     return [
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          type == 1
-              ? 'Инициативность:'
-              : type == 2
-                  ? 'Коммуникативность:'
-                  : type == 3
-                      ? 'Технологические:'
-                      : 'Ответственность:',
-          style: Theme.of(context).textTheme.headline6,
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Компетенции",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          '$percent%',
-          textAlign: ui.TextAlign.center,
-          style: Theme.of(context).textTheme.headline6,
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Базовый",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
         ),
       ),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Text(
-          percent < 65
-              ? 'Базовый'
-              : percent > 80
-                  ? 'Продвинутый'
-                  : 'Средний',
-          style: Theme.of(context).textTheme.headline6,
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Продвинутый",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Профессиональный",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Итого",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
         ),
       ),
     ];
@@ -486,17 +497,25 @@ class StudentStatisticItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: !MyApp.isDesktop(context)
-          ? ListView(
-              shrinkWrap: true,
-              children: children(context),
-            )
-          : Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: children(context),
-            ),
+    var rows = statistic.groups
+        .map((element) => TableRow(children: row(context, element)))
+        .toList();
+    rows.insert(0, TableRow(children: header(context)));
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "${statistic.name}",
+            style: Theme.of(context).textTheme.headline5,
+          ),
+        ),
+        Table(
+            border: TableBorder.symmetric(
+                inside: BorderSide(color: Colors.black, width: 2),
+                outside: BorderSide(color: Colors.black, width: 2)),
+            children: rows),
+      ],
     );
   }
 }
@@ -519,48 +538,42 @@ class _StudentTrajectoryScreenState extends State<StudentTrajectoryScreen> {
               child: Menu(),
             )
           : null,
+      floatingActionButton: IconButton(
+        onPressed: () {
+          showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => StudentComments());
+        },
+        color: Theme.of(context).accentColor,
+        icon: Icon(Icons.chat),
+      ),
       body: !MyApp.isDesktop(context)
-          ? ListView(
-              children: [
-                Container(
-                  height: 50,
-                  width: double.infinity,
-                  color: Colors.purple,
-                  child: CustomText(
-                    'Траектория Развития',
-                    fontSize: 32,
-                    color: Colors.white,
-                  ),
-                ),
-                Flexible(child: StudentStatistic()),
-              ],
-            )
+          ? content()
           : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(width: 200, child: Menu()),
-                Flexible(
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 50,
-                        width: double.infinity,
-                        color: Colors.purple,
-                        child: CustomText(
-                          'Траектория Развития',
-                          fontSize: 32,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: StudentStatistic(),
-                      ),
-                    ],
-                  ),
-                ),
+                Flexible(child: content()),
               ],
             ),
+    );
+  }
+
+  content() {
+    return Column(
+      children: [
+        Container(
+          height: 50,
+          width: double.infinity,
+          color: Colors.purple,
+          child: CustomText(
+            'Траектория Развития',
+            fontSize: 32,
+            color: Colors.white,
+          ),
+        ),
+        Flexible(child: StudentStatisticItem()),
+      ],
     );
   }
 }

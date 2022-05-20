@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -11,6 +12,12 @@ class Data with ChangeNotifier {
 
   DateTime? _startTime;
 
+  List<StudentResult> _statistic = [];
+
+  List<Comments> _comments = [];
+
+  User? _student;
+
   DateTime get getStartTime {
     if (_startTime != null)
       return _startTime!;
@@ -20,11 +27,17 @@ class Data with ChangeNotifier {
 
   User? get getProfileData => _user;
 
+  User? get getStudentData => _student;
+
   QuestionData? get getQuestionData => _questionData;
 
   String get getFullname => '${_user!.name} ${_user!.surname}';
 
   String get getGroup => _user!.groupTitle;
+
+  List<StudentResult> get getStatistic => _statistic;
+
+  List<Comments> get getComments => _comments;
 
   void refreshProfileData(User user) {
     _user = user;
@@ -55,6 +68,21 @@ class Data with ChangeNotifier {
 
   void refreshStartTime(startTime) {
     _startTime = DateTime.parse(startTime);
+    notifyListeners();
+  }
+
+  void refreshStudentStatisticData(List<StudentResult> statistic) {
+    _statistic = statistic;
+    notifyListeners();
+  }
+
+  void refreshStudentCommentsData(List<Comments> comments) {
+    _comments = comments;
+    notifyListeners();
+  }
+
+  void refreshCurrentStudentData(User student) {
+    _student = student;
     notifyListeners();
   }
 }
@@ -118,6 +146,42 @@ class GroupData with ChangeNotifier {
     _groups[index].status = Status.loading;
     notifyListeners();
   }
+}
+
+class Comments {
+  final String comment, id, timestamp;
+
+  Comments(this.comment, this.id, this.timestamp);
+
+  Comments.fromJson(Map<String, dynamic> json)
+      : id = json['id'],
+        comment = json['comment'],
+        timestamp = json['timestamp'];
+}
+
+class StudentResult {
+  final String name;
+  final List<Groups> groups;
+
+  StudentResult(this.name, this.groups);
+
+  StudentResult.fromJson(Map<String, dynamic> json)
+      : name = json['name'],
+        groups = (json['groups'] as List).map((groupsJson) {
+          return Groups.fromJson(groupsJson);
+        }).toList();
+}
+
+class Groups {
+  final String name;
+  final double? total, base, advanced, professional;
+
+  Groups.fromJson(Map<String, dynamic> json)
+      : name = json['name'],
+        total = json['total'],
+        base = json['base'],
+        advanced = json['advanced'],
+        professional = json['professional'];
 }
 
 class LevelTeacher {

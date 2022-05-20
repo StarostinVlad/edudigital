@@ -79,6 +79,7 @@ class StudentDetailScreen extends StatefulWidget {
 class _StudentDetailScreen extends State<StudentDetailScreen> {
   @override
   Widget build(BuildContext context) {
+    var student = context.watch<Data>().getStudentData;
     return Scaffold(
       appBar: CustomAppBar(),
       drawer: !MyApp.isDesktop(context)
@@ -86,6 +87,15 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
               child: TeacherMenu(),
             )
           : null,
+      floatingActionButton: IconButton(
+        onPressed: () {
+          showDialog<String>(
+              context: context,
+              builder: (BuildContext context) => StudentComments());
+        },
+        color: Theme.of(context).accentColor,
+        icon: Icon(Icons.chat),
+      ),
       body: !MyApp.isDesktop(context)
           ? TeacherStatistic()
           : Row(
@@ -100,7 +110,7 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
                           width: double.infinity,
                           color: Colors.purple,
                           child: CustomText(
-                            'Старостин Владислав Андреевич',
+                            "${student?.name} ${student?.surname}",
                             fontSize: 32,
                             color: Colors.white,
                           )),
@@ -166,10 +176,6 @@ class _RecomendationDialogState extends State<RecomendationDialog> {
       actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.pop(context, 'Cancel'),
-          child: const Text('Связаться с менеджером'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, 'Cancel'),
           child: const Text('Отмена'),
         ),
         TextButton(
@@ -183,8 +189,11 @@ class _RecomendationDialogState extends State<RecomendationDialog> {
                 _recomendationError = "Рекомендация не должна быть пустой";
               });
             }
-            if (_recomendationError == null) {
-              ApiClient.sendRecomendation(_recomendationController.text)
+            var student =
+                Provider.of<Data>(context, listen: false).getStudentData;
+            if (_recomendationError == null && student != null) {
+              ApiClient()
+                  .sendRecomendation(_recomendationController.text, student.id)
                   .then((value) => Navigator.pop(context, 'Отправить'));
             }
           },
@@ -480,6 +489,9 @@ class TeacherContent extends StatelessWidget {
             Expanded(
               child: MaterialButton(
                 onPressed: () {
+                  context
+                      .read<Data>()
+                      .refreshCurrentStudentData(members[index]);
                   Navigator.pushNamed(context, RoutesName.detail);
                 },
                 child: ListTile(
@@ -599,10 +611,16 @@ class _AccessLevelState extends State<AccessLevel> {
               builder: (BuildContext context) =>
                   AccessLevelDialog(widget.test.id));
         },
-        child: Text(
-          widget.test.name,
-          style: TextStyle(color: Colors.white),
-        ),
+        child: Column(children: [
+          Text(
+            widget.test.name,
+            style: TextStyle(color: Colors.white),
+          ),
+          Text(
+            widget.test.isAvailable ? "Доступен" : "Недоступен",
+            style: TextStyle(color: Colors.white, fontSize: 10),
+          ),
+        ]),
       ),
     );
   }
@@ -656,12 +674,9 @@ class TeacherStatistic extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.0),
-      child: ListView(
-        shrinkWrap: true,
+      child: Column(
         children: [
-          TeacherStatisticItem(level: 1, isOpen: true),
-          TeacherStatisticItem(level: 2, isOpen: true),
-          TeacherStatisticItem(level: 3, isOpen: false),
+          Flexible(child: Statistic()),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: MaterialButton(
@@ -675,6 +690,36 @@ class TeacherStatistic extends StatelessWidget {
           )
         ],
       ),
+    );
+  }
+}
+
+class Statistic extends StatelessWidget {
+  const Statistic({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: ApiClient().getStudentStatistic(),
+      builder:
+          (BuildContext context, AsyncSnapshot<List<StudentResult>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.none &&
+            !snapshot.hasData) {
+          return Text("Статистика отсутствует");
+        }
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return Center(child: CircularProgressIndicator());
+
+        var statistic = snapshot.data;
+        if (statistic == null) return Text("Статистика отсутствует");
+        return ListView(
+          shrinkWrap: false,
+          children: statistic.map((e) {
+            print("statistic item:$e");
+            return StatisticItem(e);
+          }).toList(),
+        );
+      },
     );
   }
 }
@@ -906,15 +951,6 @@ class _TeacherMenuState extends State<TeacherMenu> {
                 onPressed: () {},
                 child: ListTile(
                   title: CustomText(
-                    "Мои компетенции",
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              MaterialButton(
-                onPressed: () {},
-                child: ListTile(
-                  title: CustomText(
                     "Служба поддержки",
                     fontSize: 12,
                   ),
@@ -962,9 +998,7 @@ class _TeacherMenuState extends State<TeacherMenu> {
                   ? InkWell(
                       onTap: () {
                         context.read<GroupData>().changeGroupStatus(index);
-                        ApiClient()
-                            .removeGroup(groups[index].id)
-                            .then((value) {
+                        ApiClient().removeGroup(groups[index].id).then((value) {
                           context.read<GroupData>().removeGroup(index);
                         });
                       },
@@ -983,6 +1017,258 @@ class _TeacherMenuState extends State<TeacherMenu> {
           ),
         );
       },
+    );
+  }
+}
+
+class StudentComments extends StatelessWidget {
+  const StudentComments({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text("Рекомендации от преподавателя"),
+      content: CommentsWidget(),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context, 'Cancel');
+          },
+          child: const Text('OK'),
+        ),
+      ],
+    );
+  }
+}
+
+class CommentsWidget extends StatelessWidget {
+  const CommentsWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      future:
+          ApiClient().getRecomendation(context.read<Data>().getStudentData?.id),
+      builder: (BuildContext context, AsyncSnapshot<List<Comments>> snapshot) {
+        if (snapshot.connectionState == ConnectionState.none &&
+            !snapshot.hasData) {
+          return Text("Рекомендации отсутствуют");
+        }
+        if (snapshot.connectionState == ConnectionState.waiting)
+          return Center(child: CircularProgressIndicator());
+
+        var comments = snapshot.data;
+        if (comments == null) return Text("Рекомендации отсутствуют");
+        return Container(
+          child: comments.isEmpty
+              ? Center(child: Text("Рекомендации отсутствуют"))
+              : Container(
+                  width: double.maxFinite,
+                  child: ListView.builder(
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          trailing: IconButton(
+                            onPressed: () {
+                              ApiClient().removeComment(comments[index].id);
+                            },
+                            icon: Icon(Icons.delete),
+                          ),
+                          title: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Container(
+                              height: 200,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                    width: 5, color: Colors.deepPurple),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Text(
+                                  comments[index].comment,
+                                  style: Theme.of(context).textTheme.headline6,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      })),
+        );
+      },
+    );
+  }
+}
+
+class StudentStatisticItem extends StatelessWidget {
+  const StudentStatisticItem({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var statistic = context.watch<Data>().getStatistic;
+    if (statistic.isEmpty)
+      return Center(
+        child: Text("Статистика отсутствует"),
+      );
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 5.0),
+      child: ListView(
+        shrinkWrap: false,
+        children: statistic.map((e) {
+          print("statistic item:$e");
+          return StatisticItem(e);
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class StatisticItem extends StatelessWidget {
+  final StudentResult statistic;
+
+  const StatisticItem(this.statistic, {Key? key}) : super(key: key);
+
+  row(BuildContext context, Groups groups) {
+    return [
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.name,
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.base != null ? "${groups.base}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.advanced != null ? "${groups.advanced}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.professional != null ? "${groups.professional}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "${groups.total!}",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> header(BuildContext context) {
+    return [
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Компетенции",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Базовый",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Продвинутый",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Профессиональный",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Итого",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var rows = statistic.groups
+        .map((element) => TableRow(children: row(context, element)))
+        .toList();
+    rows.insert(0, TableRow(children: header(context)));
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "${statistic.name}",
+            style: Theme.of(context).textTheme.headline5,
+          ),
+        ),
+        Table(
+            border: TableBorder.symmetric(
+                inside: BorderSide(color: Colors.black, width: 2),
+                outside: BorderSide(color: Colors.black, width: 2)),
+            children: rows),
+      ],
     );
   }
 }

@@ -69,11 +69,23 @@ class MyApp extends StatelessWidget {
       case RoutesName.main:
         return MaterialPageRoute(builder: (context) => const MainScreen());
       case RoutesName.detail:
-        return MaterialPageRoute(
-            builder: (context) => const StudentDetailScreen());
+        return MaterialPageRoute(builder: (context) {
+          return StudentDetailScreen();
+        });
       case RoutesName.trajectory:
-        return MaterialPageRoute(
-            builder: (context) => const StudentTrajectoryScreen());
+        return MaterialPageRoute(builder: (context) {
+          ApiClient().getRecomendation().then((comments) {
+            if (comments.isNotEmpty) {
+              context.read<Data>().refreshStudentCommentsData(comments);
+            }
+          });
+          ApiClient().getStudentStatistic().then((statistic) {
+            if (statistic.isNotEmpty) {
+              context.read<Data>().refreshStudentStatisticData(statistic);
+            }
+          });
+          return StudentTrajectoryScreen();
+        });
       case RoutesName.testScreen:
         return MaterialPageRoute(builder: (context) => const TestScreen());
       case RoutesName.demoScreen:
@@ -83,14 +95,10 @@ class MyApp extends StatelessWidget {
           ApiClient().getGroups().then((value) {
             if (value.isNotEmpty) {
               context.read<GroupData>().refreshGroupsData(value);
-              ApiClient()
-                  .getGroupDetail(value.first.id)
-                  .then((groupDetail) {
+              ApiClient().getGroupDetail(value.first.id).then((groupDetail) {
                 context.read<GroupData>().refreshGroupDetailData(groupDetail);
               });
-              ApiClient()
-                  .getGroupAvailableTests(value.first.id)
-                  .then((levels) {
+              ApiClient().getGroupAvailableTests(value.first.id).then((levels) {
                 context.read<GroupData>().refreshLevelsData(levels);
               });
             }
