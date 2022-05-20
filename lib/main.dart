@@ -7,6 +7,7 @@ import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:provider/provider.dart';
 
 import 'Models.dart';
+import 'demo_screen2.dart';
 import 'invite_screen.dart';
 import 'login_page.dart';
 import 'question_page.dart';
@@ -89,7 +90,8 @@ class MyApp extends StatelessWidget {
       case RoutesName.testScreen:
         return MaterialPageRoute(builder: (context) => const TestScreen());
       case RoutesName.demoScreen:
-        return MaterialPageRoute(builder: (context) => const DemoScreen());
+        return MaterialPageRoute(
+            builder: (context) => const AnotherDemoScreen());
       case RoutesName.teacher:
         return MaterialPageRoute(builder: (context) {
           ApiClient().getGroups().then((value) {
