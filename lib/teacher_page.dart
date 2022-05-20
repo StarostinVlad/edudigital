@@ -700,7 +700,8 @@ class Statistic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: ApiClient().getStudentStatistic(),
+      future: ApiClient()
+          .getStudentStatistic(context.read<Data>().getStudentData?.id),
       builder:
           (BuildContext context, AsyncSnapshot<List<StudentResult>> snapshot) {
         if (snapshot.connectionState == ConnectionState.none &&
@@ -1100,29 +1101,6 @@ class CommentsWidget extends StatelessWidget {
   }
 }
 
-class StudentStatisticItem extends StatelessWidget {
-  const StudentStatisticItem({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    var statistic = context.watch<Data>().getStatistic;
-    if (statistic.isEmpty)
-      return Center(
-        child: Text("Статистика отсутствует"),
-      );
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 5.0),
-      child: ListView(
-        shrinkWrap: false,
-        children: statistic.map((e) {
-          print("statistic item:$e");
-          return StatisticItem(e);
-        }).toList(),
-      ),
-    );
-  }
-}
-
 class StatisticItem extends StatelessWidget {
   final StudentResult statistic;
 
@@ -1146,7 +1124,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.base != null ? "${groups.base}%" : "",
+            groups.base != null ? "${groups.base!*100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -1157,7 +1135,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.advanced != null ? "${groups.advanced}%" : "",
+            groups.advanced != null ? "${groups.advanced!*100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -1168,7 +1146,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.professional != null ? "${groups.professional}%" : "",
+            groups.professional != null ? "${groups.professional!*100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -1179,7 +1157,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            "${groups.total!}",
+            "${groups.total!*100}",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),

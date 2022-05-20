@@ -393,7 +393,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.base != null ? "${groups.base}%" : "",
+            groups.base != null ? "${groups.base!*100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -404,7 +404,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.advanced != null ? "${groups.advanced}%" : "",
+            groups.advanced != null ? "${groups.advanced!*100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -415,7 +415,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.professional != null ? "${groups.professional}%" : "",
+            groups.professional != null ? "${groups.professional!*100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -426,7 +426,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            "${groups.total!}",
+            "${groups.total!*100}",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),

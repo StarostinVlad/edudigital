@@ -480,10 +480,8 @@ class ApiClient {
   Future<List<Comments>> getRecomendation([String? id]) async {
     (_client).withCredentials = true;
     String url = "/api/v1/comments/";
-    if(id!=null)
-      url = '/api/v1/comments/$id';
-    final response = await _client.get(
-        Uri.parse(Constants.BASE_URL + url),
+    if (id != null) url = '/api/v1/comments/$id';
+    final response = await _client.get(Uri.parse(Constants.BASE_URL + url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         });
@@ -498,10 +496,12 @@ class ApiClient {
     }
   }
 
-  Future<List<StudentResult>> getStudentStatistic() async {
+  Future<List<StudentResult>> getStudentStatistic([String? id]) async {
     (_client).withCredentials = true;
+    String url = "/api/v1/results/";
+    if (id != null) url = '/api/v1/results/$id';
     final response = await _client.get(
-        Uri.parse(Constants.BASE_URL + '/api/v1/results'),
+        Uri.parse(Constants.BASE_URL + url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         });
