@@ -144,43 +144,50 @@ class QuestionContainer extends StatelessWidget {
     print("questionData 2:$questionData");
     if (questionData == null || questionData.status)
       return Center(child: CircularProgressIndicator());
-    return ListView(shrinkWrap: true, children: [
-      // Container(
-      //     height: 50,
-      //     width: double.infinity,
-      //     color: Colors.purple,
-      //     child: CustomText(S
-      //       _questionData!.title,
-      //       fontSize: 32,
-      //       color: Colors.white,
-      //     )),
-      Padding(
-        padding: const EdgeInsets.all(40.0),
-        child: Center(
+    return ListView(
+        physics: ClampingScrollPhysics(),
+        shrinkWrap: true,
+        children: [
+          // Container(
+          //     height: 50,
+          //     width: double.infinity,
+          //     color: Colors.purple,
+          //     child: CustomText(S
+          //       _questionData!.title,
+          //       fontSize: 32,
+          //       color: Colors.white,
+          //     )),
+          Padding(
+            padding: const EdgeInsets.all(40.0),
+            child: Center(
+                child: Text(
+              questionData.title,
+              style: Theme.of(context).textTheme.headline5,
+            )),
+          ),
+          if (questionData.type == "QuestionTypes.SINGLE_SELECT")
+            AnswersContainer(questionData.answers)
+          else
+            MultipleAnswersContainer(questionData.answers),
+          MaterialButton(
+            color: Theme.of(context).accentColor,
+            onPressed: () {
+              context.read<Data>().refreshQuestionStatus(true);
+              print(
+                  "questionID: ${questionData.id} answerId:${questionData.answersId}");
+              ApiClient()
+                  .giveAnswersForQuestion(
+                      questionData.id, questionData.answersId)
+                  .then((value) {
+                getNextQuestion(context);
+              });
+            },
             child: Text(
-          questionData.title,
-          style: Theme.of(context).textTheme.headline5,
-        )),
-      ),
-      if (questionData.type == "QuestionTypes.SINGLE_SELECT")
-        AnswersContainer(questionData.answers)
-      else
-        MultipleAnswersContainer(questionData.answers),
-      MaterialButton(
-        color: Theme.of(context).accentColor,
-        onPressed: () {
-          context.read<Data>().refreshQuestionStatus(true);
-          print(
-              "questionID: ${questionData.id} answerId:${questionData.answersId}");
-          ApiClient()
-              .giveAnswersForQuestion(questionData.id, questionData.answersId)
-              .then((value) {
-            getNextQuestion(context);
-          });
-        },
-        child: Text('Далее'),
-      ),
-    ]);
+              'Далее',
+              style: TextStyle(color: Theme.of(context).primaryColor),
+            ),
+          ),
+        ]);
   }
 }
 

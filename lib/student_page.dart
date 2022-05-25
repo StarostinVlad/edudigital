@@ -270,16 +270,7 @@ class StudentScreenLoaded extends StatelessWidget {
                     child: ListView(
                       shrinkWrap: true,
                       children: [
-                        MaterialButton(
-                          onPressed: () {},
-                          minWidth: double.infinity,
-                          color: Colors.deepPurple,
-                          child: CustomText(
-                            'SoftSkills',
-                            fontSize: 32,
-                            color: Colors.white,
-                          ),
-                        ),
+                        SoftSkillBtn(),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.max,
@@ -300,7 +291,42 @@ class StudentScreenLoaded extends StatelessWidget {
                   ),
                 ],
               )
-            : ListView(children: [Greetings(), StudentContent()]),
+            : ListView(
+                children: [SoftSkillBtn(), Greetings(), StudentContent()]),
+      ),
+    );
+  }
+}
+
+class SoftSkillBtn extends StatelessWidget {
+  const SoftSkillBtn({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialButton(
+      onPressed: () {
+        ApiClient().startSelfCheck().then((value) {
+          context.read<Data>().refreshStartTime(value);
+          ApiClient().getNextQuestion().then((questionData) {
+            context.read<Data>().refreshQuestionData(questionData);
+            Navigator.popAndPushNamed(context, RoutesName.testScreen);
+          });
+        }).onError((error, stackTrace) {
+          if (error is TestIsAlredyStartedException)
+            showDialog<String>(
+                context: context,
+                builder: (BuildContext context) =>
+                    AnotherTestAlreadyStartedDialog());
+          else
+            Navigator.popAndPushNamed(context, RoutesName.student);
+        });
+      },
+      minWidth: double.infinity,
+      color: Colors.deepPurple,
+      child: CustomText(
+        'SoftSkills',
+        fontSize: 32,
+        color: Colors.white,
       ),
     );
   }
@@ -594,8 +620,7 @@ class _StudentContentState extends State<StudentContent> {
         padding: EdgeInsets.symmetric(vertical: 5.0),
         child: Column(
           children: [
-            ListView(
-              shrinkWrap: true,
+            Column(
               children:
                   Provider.of<StudentStatisticData>(context, listen: false)
                       .getStatisticData

@@ -481,6 +481,7 @@ class TeacherContent extends StatelessWidget {
     print(members);
     if (members == null) return CircularProgressIndicator();
     return ListView.builder(
+      physics: ClampingScrollPhysics(),
       shrinkWrap: true,
       itemCount: members.length,
       itemBuilder: (BuildContext context, int index) {
@@ -509,12 +510,11 @@ class TeacherContent extends StatelessWidget {
                 ? InkWell(
                     borderRadius: BorderRadius.circular(20),
                     onTap: () {
-                      context.read<GroupData>().changeMemberStatus(index);
-                      ApiClient()
-                          .removeStudentFromGroup(members[index].id)
-                          .then((value) {
-                        context.read<GroupData>().removeMember(index);
-                      });
+                      showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              AcceptStudentRemoveDialog(
+                                  members[index].id, index));
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(2.0),
@@ -543,6 +543,7 @@ class GroupsList extends StatelessWidget {
             ),
           ),
           ListView(
+            physics: ClampingScrollPhysics(),
             shrinkWrap: true,
             children: levelList(context.watch<GroupData>().levels),
           )
@@ -563,6 +564,7 @@ class Level extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
         child: ListView(
+      physics: ClampingScrollPhysics(),
       shrinkWrap: true,
       children: [
         CustomText(
@@ -668,6 +670,86 @@ class _AccessLevelDialogState extends State<AccessLevelDialog> {
   }
 }
 
+class AcceptStudentRemoveDialog extends StatefulWidget {
+  final String studentId;
+  final int index;
+
+  const AcceptStudentRemoveDialog(this.studentId, this.index, {Key? key})
+      : super(key: key);
+
+  @override
+  _AcceptStudentRemoveDialogState createState() =>
+      _AcceptStudentRemoveDialogState();
+}
+
+class _AcceptStudentRemoveDialogState extends State<AcceptStudentRemoveDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Внимание!'),
+      content: Form(
+        child: Text('Вы уверены что хотите удалить студента?'),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'Cancel'),
+          child: const Text('Отменить'),
+        ),
+        TextButton(
+          onPressed: () {
+            context.read<GroupData>().changeMemberStatus(widget.index);
+            ApiClient().removeStudentFromGroup(widget.studentId).then((value) {
+              context.read<GroupData>().removeMember(widget.index);
+              Navigator.pop(context, 'OK');
+            });
+          },
+          child: const Text('Удалить'),
+        ),
+      ],
+    );
+  }
+}
+
+class AcceptGroupRemoveDialog extends StatefulWidget {
+  final String groupId;
+  final int index;
+
+  const AcceptGroupRemoveDialog(this.groupId, this.index, {Key? key})
+      : super(key: key);
+
+  @override
+  _AcceptGroupRemoveDialogState createState() =>
+      _AcceptGroupRemoveDialogState();
+}
+
+class _AcceptGroupRemoveDialogState extends State<AcceptGroupRemoveDialog> {
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Внимание!'),
+      content: Form(
+        child: Text('Вы уверены что хотите удалить группу?'),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'Cancel'),
+          child: const Text('Отменить'),
+        ),
+        TextButton(
+          onPressed: () {
+            context.read<GroupData>().changeGroupStatus(widget.index);
+            ApiClient().removeGroup(widget.groupId).then((value) {
+              context.read<GroupData>().removeGroup(widget.index);
+              Navigator.pop(context, 'OK');
+            });
+          },
+          child: const Text('Удалить'),
+        ),
+      ],
+    );
+  }
+}
+
 class TeacherStatistic extends StatelessWidget {
   const TeacherStatistic({Key? key}) : super(key: key);
 
@@ -715,7 +797,7 @@ class Statistic extends StatelessWidget {
         var statistic = snapshot.data;
         if (statistic == null) return Text("Статистика отсутствует");
         return ListView(
-          shrinkWrap: false,
+          physics: ClampingScrollPhysics(),
           children: statistic.map((e) {
             print("statistic item:$e");
             return StatisticItem(e);
@@ -842,6 +924,7 @@ class TeacherStatisticItem extends StatelessWidget {
     return Container(
       child: !MyApp.isDesktop(context)
           ? ListView(
+              physics: ClampingScrollPhysics(),
               shrinkWrap: true,
               children: children(context),
             )
@@ -918,58 +1001,62 @@ class _TeacherMenuState extends State<TeacherMenu> {
               alignment: Alignment.bottomCenter,
               child: Container(child: Image.asset("assets/background2.png")),
             ),
-            ListView(shrinkWrap: true, children: [
-              Padding(
-                padding: EdgeInsets.only(top: 20.0),
-                child: Center(
-                  // child: CustomText("Мой профиль"),
-                  child: CustomText(option1Text),
-                ),
-              ),
-              ProfileAvatar(),
-              Center(
-                child: CustomText(
-                  context.watch<Data>().getFullname,
-                  fontSize: 16,
-                  padding: 10.0,
-                ),
-              ),
-              groupsList(context.watch<GroupData>().groups),
-              MaterialButton(
-                onPressed: () {
-                  showDialog<String>(
-                      context: context,
-                      builder: (BuildContext context) => CreateGroup());
-                },
-                child: ListTile(
-                  title: CustomText(
-                    "Создать группу",
-                    fontSize: 12,
+            ListView(
+                physics: ClampingScrollPhysics(),
+                shrinkWrap: true,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(top: 20.0),
+                    child: Center(
+                      // child: CustomText("Мой профиль"),
+                      child: CustomText(option1Text),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: 100.0),
-              MaterialButton(
-                onPressed: () {
-                  showDialog<String>(
-                      context: context,
-                      builder: (BuildContext context) =>
-                          SupportServiceDialog());
-                },
-                child: ListTile(
-                  title: CustomText(
-                    "Служба поддержки",
-                    fontSize: 12,
+                  ProfileAvatar(),
+                  Center(
+                    child: CustomText(
+                      context.watch<Data>().getFullname,
+                      fontSize: 16,
+                      padding: 10.0,
+                    ),
                   ),
-                ),
-              )
-            ]),
+                  groupsList(context.watch<GroupData>().groups),
+                  MaterialButton(
+                    onPressed: () {
+                      showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) => CreateGroup());
+                    },
+                    child: ListTile(
+                      title: CustomText(
+                        "Создать группу",
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 100.0),
+                  MaterialButton(
+                    onPressed: () {
+                      showDialog<String>(
+                          context: context,
+                          builder: (BuildContext context) =>
+                              SupportServiceDialog());
+                    },
+                    child: ListTile(
+                      title: CustomText(
+                        "Служба поддержки",
+                        fontSize: 12,
+                      ),
+                    ),
+                  )
+                ]),
           ],
         ),
       );
 
   groupsList(List<Group> groups) {
     return ListView.builder(
+      physics: ClampingScrollPhysics(),
       shrinkWrap: true,
       itemCount: groups.length,
       itemBuilder: (BuildContext context, int index) {
@@ -1004,10 +1091,11 @@ class _TeacherMenuState extends State<TeacherMenu> {
               groups[index].status == Status.done
                   ? InkWell(
                       onTap: () {
-                        context.read<GroupData>().changeGroupStatus(index);
-                        ApiClient().removeGroup(groups[index].id).then((value) {
-                          context.read<GroupData>().removeGroup(index);
-                        });
+                        showDialog<String>(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                AcceptGroupRemoveDialog(
+                                    groups[index].id, index));
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(2.0),

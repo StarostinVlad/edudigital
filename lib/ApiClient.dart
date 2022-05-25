@@ -572,6 +572,32 @@ class ApiClient {
       throw Exception("Error");
     }
   }
+
+  Future startSelfCheck() async {
+    (_client).withCredentials = true;
+    final response = await _client.post(
+        Uri.parse(Constants.BASE_URL + '/api/v1/tests/start_self_check'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      Repository().setEndTime(DateTime.now().add(Duration(minutes: 30)));
+
+      var json = jsonDecode(response.body);
+      return json["exp_time"];
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      if (response.statusCode == 409)
+        throw TestIsAlredyStartedException("Error");
+      throw Exception("error");
+    }
+  }
 }
 
 class CustomException implements Exception {
