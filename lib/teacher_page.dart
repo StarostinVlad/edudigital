@@ -108,7 +108,7 @@ class _StudentDetailScreen extends State<StudentDetailScreen> {
                       Container(
                           height: 50,
                           width: double.infinity,
-                          color: Colors.purple,
+                          color: Colors.deepPurple,
                           child: CustomText(
                             "${student?.name} ${student?.surname}",
                             fontSize: 32,
@@ -655,9 +655,10 @@ class _AccessLevelDialogState extends State<AccessLevelDialog> {
             ApiClient()
                 .makeTestAvailable(groupDetail?.id, widget.testId)
                 .then((value) {
-              ApiClient()
-                  .getGroupAvailableTests(groupDetail!.id)
-                  .then((value) => Navigator.pop(context, 'OK'));
+              ApiClient().getGroupAvailableTests(groupDetail!.id).then((value) {
+                context.read<GroupData>().refreshLevelsData(value);
+                Navigator.pop(context, 'OK');
+              });
             });
           },
           child: const Text('Предоставить'),
@@ -952,7 +953,8 @@ class _TeacherMenuState extends State<TeacherMenu> {
                 onPressed: () {
                   showDialog<String>(
                       context: context,
-                      builder: (BuildContext context) => SupportServiceDialog());
+                      builder: (BuildContext context) =>
+                          SupportServiceDialog());
                 },
                 child: ListTile(
                   title: CustomText(
