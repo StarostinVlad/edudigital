@@ -304,7 +304,7 @@ class _InviteStudentState extends State<InviteStudent> {
     await Clipboard.setData(
         ClipboardData(text: "https://edu-it.online/#/invite/$url/"));
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-      content: Text('Copied to clipboard'),
+      content: Text('Скопировано в буфер обмена!'),
     ));
   }
 
@@ -949,7 +949,11 @@ class _TeacherMenuState extends State<TeacherMenu> {
               ),
               SizedBox(height: 100.0),
               MaterialButton(
-                onPressed: () {},
+                onPressed: () {
+                  showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) => SupportServiceDialog());
+                },
                 child: ListTile(
                   title: CustomText(
                     "Служба поддержки",
@@ -1124,7 +1128,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.base != null ? "${groups.base!*100}%" : "",
+            groups.base != null ? "${groups.base! * 100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -1135,7 +1139,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.advanced != null ? "${groups.advanced!*100}%" : "",
+            groups.advanced != null ? "${groups.advanced! * 100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -1146,7 +1150,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.professional != null ? "${groups.professional!*100}%" : "",
+            groups.professional != null ? "${groups.professional! * 100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -1157,7 +1161,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            "${groups.total!*100}",
+            "${groups.total! * 100}",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),

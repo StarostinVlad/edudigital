@@ -500,8 +500,7 @@ class ApiClient {
     (_client).withCredentials = true;
     String url = "/api/v1/results/";
     if (id != null) url = '/api/v1/results/$id';
-    final response = await _client.get(
-        Uri.parse(Constants.BASE_URL + url),
+    final response = await _client.get(Uri.parse(Constants.BASE_URL + url),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8'
         });
@@ -529,6 +528,46 @@ class ApiClient {
 
     if (response.statusCode == 200) {
       return null;
+    } else {
+      throw Exception("Error");
+    }
+  }
+
+  Future purchase(String email, String fullname, String organization) async {
+    (_client).withCredentials = true;
+    final response = await _client.post(
+        Uri.parse(Constants.BASE_URL + '/api/v1/buy'),
+        body: jsonEncode(<String, String?>{
+          "email": email,
+          "name": fullname,
+          "organization": organization
+        }),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      throw Exception("Error");
+    }
+  }
+
+  Future sendMsg(String? email, String msg) async {
+    (_client).withCredentials = true;
+    final response = await _client.post(
+        Uri.parse(Constants.BASE_URL + '/api/v1/support'),
+        body: jsonEncode(<String, String?>{"email": email, "message": msg}),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      return;
     } else {
       throw Exception("Error");
     }

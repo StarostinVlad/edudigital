@@ -51,7 +51,12 @@ class Menu extends StatelessWidget {
                 ),
               ),
               MaterialButton(
-                onPressed: () {},
+                onPressed: () {
+                  showDialog<String>(
+                      context: context,
+                      builder: (BuildContext context) =>
+                          SupportServiceDialog());
+                },
                 child: ListTile(
                   title: CustomText(
                     "Служба поддержки",
@@ -147,17 +152,17 @@ class EduProgressIndicator extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation<Color>(checkColor(progress)),
             value: progress,
           ),
-          subtitle: Text(test.name),
+          subtitle: Text("${test.groupName} : ${test.name}"),
           trailing: Text('${progress * 100}%')),
     );
   }
 
   Color checkColor(double progress) {
-    if (progress <= 0.3)
+    if (progress <= 0.56)
       return Colors.red;
-    else if (progress > 0.3 && progress <= 0.6)
+    else if (progress > 0.56 && progress <= 0.86)
       return Colors.yellow;
-    else if (progress > 0.6)
+    else if (progress > 0.86)
       return Colors.green;
     else
       return Colors.grey;
@@ -393,7 +398,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.base != null ? "${groups.base!*100}%" : "",
+            groups.base != null ? "${groups.base! * 100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -404,7 +409,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.advanced != null ? "${groups.advanced!*100}%" : "",
+            groups.advanced != null ? "${groups.advanced! * 100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -415,7 +420,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            groups.professional != null ? "${groups.professional!*100}%" : "",
+            groups.professional != null ? "${groups.professional! * 100}%" : "",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),
@@ -426,7 +431,7 @@ class StatisticItem extends StatelessWidget {
         child: SizedBox(
           height: 50,
           child: Text(
-            "${groups.total!*100}",
+            "${groups.total! * 100}",
             textAlign: ui.TextAlign.center,
             style: Theme.of(context).textTheme.headline6,
           ),

@@ -161,3 +161,69 @@ class Greetings extends StatelessWidget {
         ),
       );
 }
+
+class SupportServiceDialog extends StatefulWidget {
+  const SupportServiceDialog({Key? key}) : super(key: key);
+
+  @override
+  State<SupportServiceDialog> createState() => _SupportServiceDialogState();
+}
+
+class _SupportServiceDialogState extends State<SupportServiceDialog> {
+  var _msgController = TextEditingController();
+
+  String? _msgError;
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Обращение в службу поддержки'),
+      content: Form(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: TextFormField(
+            controller: _msgController,
+            keyboardType: TextInputType.multiline,
+            minLines: 5,
+            maxLines: 10,
+            decoration: InputDecoration(
+              errorText: _msgError,
+              focusColor: Theme.of(context).accentColor,
+              border: OutlineInputBorder(),
+              hintText: 'Опишите свою проблему',
+            ),
+          ),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'Cancel'),
+          child: const Text('Отмена'),
+        ),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _msgError = null;
+            });
+            if (_msgController.text.length < 2) {
+              setState(() {
+                _msgError = "Сообщение должно быть не короче 2х символов";
+              });
+            }
+            if (_msgError == null) {
+              ApiClient()
+                  .sendMsg(context.watch<Data>().getProfileData?.email,
+                      _msgController.text)
+                  .then((value) {
+                Navigator.pop(context, 'OK');
+              }).catchError((error) {
+                _msgError = "Сообщение не отправлено";
+              });
+            }
+          },
+          child: const Text(Constants.create),
+        ),
+      ],
+    );
+  }
+}

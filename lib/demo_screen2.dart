@@ -22,7 +22,8 @@ class AnotherDemoScreen extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Text('Курсы повышения педагогов от ЕИ КФУ',
+            child: Text(
+                'Курсы повышения квалификации преподавателей от Елабужского интститут КФУ',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           ),
           Flexible(
@@ -165,7 +166,8 @@ class AnotherDemoScreen extends StatelessWidget {
                       height: 50,
                       child: Center(
                         child: Text(
-                          "Приобрести",
+                          "Узнать подробнее",
+                          textAlign: TextAlign.center,
                           style:
                               TextStyle(color: Theme.of(context).primaryColor),
                         ),
@@ -262,12 +264,12 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
   var _fullnameController = TextEditingController();
   var _organizationController = TextEditingController();
 
-  String? _nameError, _surnameError;
+  String? _organizationError, _fullnameError, _emailError;
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Center(child: const Text('Заявка на приобретение курса')),
+      title: Center(child: const Text('Заявка на подобную программу')),
       content: Form(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -285,7 +287,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                 child: TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
-                    errorText: _nameError,
+                    errorText: _emailError,
                     suffixIcon: Icon(
                       Icons.alternate_email,
                       color: Theme.of(context).accentColor,
@@ -303,7 +305,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                 child: TextFormField(
                   controller: _fullnameController,
                   decoration: InputDecoration(
-                    errorText: _surnameError,
+                    errorText: _fullnameError,
                     focusColor: Theme.of(context).accentColor,
                     border: OutlineInputBorder(),
                     hintText: 'ФИО',
@@ -317,7 +319,7 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
                 child: TextFormField(
                   controller: _organizationController,
                   decoration: InputDecoration(
-                    errorText: _surnameError,
+                    errorText: _organizationError,
                     focusColor: Theme.of(context).accentColor,
                     border: OutlineInputBorder(),
                     hintText: 'Организация',
@@ -336,23 +338,41 @@ class _PurchaseDialogState extends State<PurchaseDialog> {
         TextButton(
           onPressed: () {
             setState(() {
-              _nameError = null;
-              _surnameError = null;
+              _organizationError = null;
+              _fullnameError = null;
+              _emailError = null;
             });
-            if (_emailController.text.length < 2) {
+            if (_organizationController.text.length < 2) {
               setState(() {
-                _nameError = "Имя должно быть не короче 2х символов";
+                _organizationError =
+                    "Название организации должно быть не короче 2х символов";
               });
             }
             if (_fullnameController.text.length < 2) {
               setState(() {
-                _surnameError = "Фамилия должна быть не короче 2х символов";
+                _fullnameError = "ФИО должно быть не короче 2х символов";
               });
             }
-            if (_surnameError == null && _nameError == null) {
+            if (!_emailController.text.isValidEmail()) {
+              setState(() {
+                _emailError = "Не корректный email";
+              });
+            }
+            if (_fullnameError == null &&
+                _organizationError == null &&
+                _emailError == null) {
               ApiClient()
-                  .createGroup(_emailController.text)
-                  .then((value) => Navigator.pop(context, 'OK'));
+                  .purchase(
+                    _emailController.text,
+                    _fullnameController.text,
+                    _organizationController.text,
+                  )
+                  .then((value) => Navigator.pop(context, 'OK'))
+                  .catchError((error) {
+                _fullnameError = "Что-то пошло не так";
+                _organizationError = "Что-то пошло не так";
+                _emailError = "Что-то пошло не так";
+              });
             }
           },
           child: const Text('OK'),

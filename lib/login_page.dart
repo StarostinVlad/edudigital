@@ -37,7 +37,7 @@ class LoginScreen extends StatelessWidget {
                                 image: DecorationImage(
                                     fit: BoxFit.fitHeight,
                                     image: AssetImage(
-                                      'assets/login_background2.png',
+                                      'assets/login_background.jpg',
                                     ))),
                             child: Center(
                               child: Padding(
@@ -68,7 +68,7 @@ class LoginScreen extends StatelessWidget {
                                         'Проект разработан при поддержки Фонда содействия инновациям'),
                                     Container(
                                         height: 50.0,
-                                        child: Image.asset('assets/found.png'))
+                                        child: Image.asset('assets/found1.png'))
                                   ],
                                 ),
                               ),
@@ -198,14 +198,6 @@ class LoginContent extends StatelessWidget {
             ),
             alignment: Alignment.centerLeft,
           ),
-          Align(
-            child: Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: Text('Демо-версия системы оценки',
-                  style: TextStyle(color: Colors.blue)),
-            ),
-            alignment: Alignment.centerLeft,
-          ),
           Expanded(
             child: Center(
               child: Container(
@@ -317,23 +309,17 @@ class _LoginFormState extends State<LoginForm> {
           ),
         ),
         Flexible(
-          child: Container(
-              child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                RememberMe(),
-                TextButton(
-                  onPressed: () {
-                    showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) => ForgetPassword());
-                  },
-                  child: CustomText(
-                    'Забыли пароль?',
-                    color: Theme.of(context).accentColor,
-                  ),
-                )
-              ])),
+          child: TextButton(
+            onPressed: () {
+              showDialog<String>(
+                  context: context,
+                  builder: (BuildContext context) => ForgetPassword());
+            },
+            child: CustomText(
+              'Забыли пароль?',
+              color: Theme.of(context).accentColor,
+            ),
+          ),
         ),
         Container(
           padding: EdgeInsets.symmetric(vertical: 30.0),

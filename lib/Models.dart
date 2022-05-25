@@ -281,16 +281,18 @@ class TestData {
   final bool available;
   final String id;
   final bool? isCompleted;
-  final String name;
+  final String name, groupName;
   final double result;
 
-  TestData(this.available, this.id, this.isCompleted, this.name, this.result);
+  TestData(this.available, this.id, this.isCompleted, this.name, this.groupName,
+      this.result);
 
   TestData.fromJson(Map<String, dynamic> json)
       : available = json['available'],
         id = json['id'],
         isCompleted = json['is_completed'],
         name = json['name'],
+        groupName = json['group_name'],
         result = json['result'] == null ? 0 : json['result'];
 }
 
