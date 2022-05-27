@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:edudigital/ApiClient.dart';
 import 'package:edudigital/Models.dart';
 import 'package:edudigital/constants.dart';
+import 'package:edudigital/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/src/provider.dart';
@@ -222,6 +224,334 @@ class _SupportServiceDialogState extends State<SupportServiceDialog> {
             }
           },
           child: const Text(Constants.create),
+        ),
+      ],
+    );
+  }
+}
+
+class StatisticItem extends StatelessWidget {
+  final StudentResult statistic;
+
+  const StatisticItem(this.statistic, {Key? key}) : super(key: key);
+
+  row(BuildContext context, Groups groups) {
+    return [
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.name,
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.base != null ? "${groups.base!}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.advanced != null ? "${groups.advanced!}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            groups.professional != null ? "${groups.professional!}%" : "",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "${groups.total!}",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> header(BuildContext context) {
+    return [
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Компетенции",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Базовый",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Продвинутый",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Профессиональный",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+      TableCell(
+        verticalAlignment: TableCellVerticalAlignment.middle,
+        child: SizedBox(
+          height: 50,
+          child: Text(
+            "Итого",
+            textAlign: ui.TextAlign.center,
+            style: Theme.of(context).textTheme.bodyText1,
+          ),
+        ),
+      ),
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var rows = statistic.groups
+        .map((element) => TableRow(children: row(context, element)))
+        .toList();
+    rows.insert(0, TableRow(children: header(context)));
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "${statistic.name}",
+            style: Theme.of(context).textTheme.headline6,
+          ),
+        ),
+        Table(
+            border: TableBorder.symmetric(
+                inside: BorderSide(color: Colors.black, width: 2),
+                outside: BorderSide(color: Colors.black, width: 2)),
+            children: rows),
+      ],
+    );
+  }
+}
+
+class StatisticTable extends StatelessWidget {
+  final List<StudentResult> statistic;
+
+  const StatisticTable(this.statistic, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: MediaQuery.of(context).size.width / 2,
+      padding: EdgeInsets.symmetric(horizontal: 5.0),
+      child: ListView(
+        physics: ClampingScrollPhysics(),
+        children: statistic.map((e) {
+          print("statistic item:$e");
+          return StatisticItem(e);
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class InviteStudent extends StatefulWidget {
+  const InviteStudent({Key? key}) : super(key: key);
+
+  @override
+  _InviteStudentState createState() => _InviteStudentState();
+}
+
+class _InviteStudentState extends State<InviteStudent> {
+  var _passwordController = TextEditingController();
+  var _emailController = TextEditingController();
+  var _nameController = TextEditingController();
+  var _surnameController = TextEditingController();
+
+  String? _emailError, _passwordError, _nameError, _surnameError;
+
+  String getRandString(int len) {
+    var random = Random.secure();
+    var values = List<int>.generate(len, (i) => random.nextInt(255));
+    return base64UrlEncode(values);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Присоединиться к группе'),
+      content: Form(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    errorText: _nameError,
+                    focusColor: Theme.of(context).accentColor,
+                    border: OutlineInputBorder(),
+                    hintText: 'Введите имя студента',
+                  ),
+                ),
+              ),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: _surnameController,
+                  decoration: InputDecoration(
+                    errorText: _surnameError,
+                    focusColor: Theme.of(context).accentColor,
+                    border: OutlineInputBorder(),
+                    hintText: 'Введите фамилию студента',
+                  ),
+                ),
+              ),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    errorText: _emailError,
+                    focusColor: Theme.of(context).accentColor,
+                    border: OutlineInputBorder(),
+                    hintText: 'Введите email студента',
+                  ),
+                ),
+              ),
+            ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: TextFormField(
+                  controller: _passwordController,
+                  decoration: InputDecoration(
+                    errorText: _passwordError,
+                    focusColor: Theme.of(context).accentColor,
+                    border: OutlineInputBorder(),
+                    hintText: 'Введите пароль студента',
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _passwordController.text = getRandString(8);
+                      },
+                      icon: Icon(
+                        Icons.cached_rounded,
+                        color: Theme.of(context).accentColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.pop(context, 'Cancel'),
+          child: const Text('Отмена'),
+        ),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _emailError = null;
+              _passwordError = null;
+              _nameError = null;
+              _surnameError = null;
+            });
+            if (!_emailController.text.isValidEmail()) {
+              setState(() {
+                _emailError = "Не корректный email";
+              });
+            }
+            if (_passwordController.text.length < 8) {
+              setState(() {
+                _passwordError =
+                    "Пароль должен содрежать не менее 8-ми символов";
+              });
+            }
+            if (_nameController.text.length < 2) {
+              setState(() {
+                _nameError = "Имя должно быть не короче 2х символов";
+              });
+            }
+            if (_surnameController.text.length < 2) {
+              setState(() {
+                _surnameError = "Фамилия должна быть не короче 2х символов";
+              });
+            }
+            if (_emailError == null &&
+                _passwordError == null &&
+                _surnameError == null &&
+                _nameError == null) {
+              var groupDetail =
+                  Provider.of<GroupData>(context, listen: false).groupDetail;
+              print("groupId: ${groupDetail?.id}");
+              ApiClient()
+                  .registry(
+                      groupDetail!.id,
+                      _emailController.text,
+                      _passwordController.text,
+                      _nameController.text,
+                      _surnameController.text)
+                  .then((value) => Navigator.pop(context, 'OK'));
+            } else {
+              print("another exception");
+            }
+          },
+          child: const Text('OK'),
         ),
       ],
     );

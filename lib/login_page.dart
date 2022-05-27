@@ -42,7 +42,7 @@ class LoginScreen extends StatelessWidget {
                             child: Center(
                               child: Padding(
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 40, vertical: 30),
+                                    horizontal: 40, vertical: 40),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment:
@@ -141,7 +141,7 @@ class TextOnLoginPage extends StatelessWidget {
             style: TextStyle(
                 fontWeight: ui.FontWeight.bold,
                 color: Theme.of(context).primaryColor,
-                fontSize: 46),
+                fontSize: 48),
           ),
           Text(
             'цифровых компетенций',
@@ -149,17 +149,17 @@ class TextOnLoginPage extends StatelessWidget {
             style: TextStyle(
                 fontWeight: ui.FontWeight.bold,
                 color: Theme.of(context).primaryColor,
-                fontSize: 46),
+                fontSize: 48),
           ),
           Text(
             'Онлайн-платформа для оценки и',
             style:
-                TextStyle(color: Theme.of(context).primaryColor, fontSize: 14),
+                TextStyle(color: Theme.of(context).primaryColor, fontSize: 16),
           ),
           Text(
             'развития цифровой компетентности студентов педагогических направлений',
             style:
-                TextStyle(color: Theme.of(context).primaryColor, fontSize: 14),
+                TextStyle(color: Theme.of(context).primaryColor, fontSize: 16),
           ),
         ],
       ),
@@ -450,6 +450,8 @@ class _ForgetPasswordState extends State<ForgetPassword> {
             if (_emailError == null) {
               ApiClient()
                   .forgetPassword(_emailController.text)
+                  .onError(
+                      (error, stackTrace) => _emailError = error.toString())
                   .then((value) => Navigator.pop(context, 'OK'));
             }
           },

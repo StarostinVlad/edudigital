@@ -38,6 +38,8 @@ class RoutesName {
   static const String teacher = '#/teacher';
   static const String student = '#/student';
   static const String inviteStudent = '#/invite';
+
+  static const String softSkills = '#/softSkills';
 }
 
 class MyApp extends StatelessWidget {
@@ -54,7 +56,7 @@ class MyApp extends StatelessWidget {
         accentColor: Color(0xff1800A2),
         fontFamily: 'arial',
       ),
-      initialRoute: RoutesName.home,
+      // initialRoute: RoutesName.home,
       onGenerateRoute: generateRoute,
     );
   }
@@ -89,22 +91,49 @@ class MyApp extends StatelessWidget {
         });
       case RoutesName.testScreen:
         return MaterialPageRoute(builder: (context) => const TestScreen());
+      case RoutesName.softSkills:
+        return MaterialPageRoute(builder: (context) => const SoftSkillsScreen());
       case RoutesName.demoScreen:
         return MaterialPageRoute(
             builder: (context) => const AnotherDemoScreen());
       case RoutesName.teacher:
         return MaterialPageRoute(builder: (context) {
-          ApiClient().getGroups().then((value) {
-            if (value.isNotEmpty) {
-              context.read<GroupData>().refreshGroupsData(value);
-              ApiClient().getGroupDetail(value.first.id).then((groupDetail) {
-                context.read<GroupData>().refreshGroupDetailData(groupDetail);
+          context.read<GroupData>().refreshLoadingStatus(true);
+          var groupId = "";
+          if (settings.arguments != null) {
+            groupId = settings.arguments as String;
+
+            Future.wait([
+              ApiClient().getGroupDetail(groupId),
+              ApiClient().getGroupAvailableTests(groupId)
+            ]).then((value) {
+              value.forEach((element) {
+                if (element is GroupDetail)
+                  context.read<GroupData>().refreshGroupDetailData(element);
+                if (element is List<LevelTeacher>)
+                  context.read<GroupData>().refreshLevelsData(element);
               });
-              ApiClient().getGroupAvailableTests(value.first.id).then((levels) {
-                context.read<GroupData>().refreshLevelsData(levels);
-              });
-            }
-          });
+            }).then((value) =>
+                context.read<GroupData>().refreshLoadingStatus(false));
+          } else
+            ApiClient().getGroups().then((value) {
+              if (value.isNotEmpty) {
+                context.read<GroupData>().refreshGroupsData(value);
+                groupId = value.first.id;
+                Future.wait([
+                  ApiClient().getGroupDetail(groupId),
+                  ApiClient().getGroupAvailableTests(groupId)
+                ]).then((value) {
+                  value.forEach((element) {
+                    if (element is GroupDetail)
+                      context.read<GroupData>().refreshGroupDetailData(element);
+                    if (element is List<LevelTeacher>)
+                      context.read<GroupData>().refreshLevelsData(element);
+                  });
+                }).then((value) =>
+                    context.read<GroupData>().refreshLoadingStatus(false));
+              }
+            });
           return TeacherScreen();
         });
       case RoutesName.student:

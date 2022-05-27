@@ -173,14 +173,9 @@ class ApiClient {
     print(response.body);
 
     if (response.statusCode == 200) {
-      // If the server did return a 201 CREATED response,
-      // then parse the JSON.
-      var json = jsonDecode(response.body);
-      return json['message']['role'];
+      return "";
     } else {
-      // If the server did not return a 201 CREATED response,
-      // then throw an exception.
-      return "error";
+      throw Exception('Another exception');
     }
   }
 
@@ -391,6 +386,30 @@ class ApiClient {
   Future makeTestAvailable(String? groupId, String? testId) async {
     (_client).withCredentials = true;
     final response = await _client.post(
+        Uri.parse(Constants.BASE_URL + '/api/v1/test/set_available'),
+        body: jsonEncode(
+            <String, String?>{"group_id": groupId, "test_id": testId}),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8'
+        });
+
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      var json = jsonDecode(response.body);
+      return json['message'];
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      // throw Exception("Error");
+      return "error";
+    }
+  }
+  Future makeTestUnAvailable(String? groupId, String? testId) async {
+    (_client).withCredentials = true;
+    final response = await _client.delete(
         Uri.parse(Constants.BASE_URL + '/api/v1/test/set_available'),
         body: jsonEncode(
             <String, String?>{"group_id": groupId, "test_id": testId}),

@@ -106,6 +106,10 @@ class GroupData with ChangeNotifier {
 
   GroupDetail? _groupDetail;
 
+  bool _loading = true;
+
+  bool get loading => _loading;
+
   GroupDetail? get groupDetail => _groupDetail;
 
   List<Group> get groups => _groups;
@@ -144,6 +148,11 @@ class GroupData with ChangeNotifier {
 
   void changeGroupStatus(int index) {
     _groups[index].status = Status.loading;
+    notifyListeners();
+  }
+
+  void refreshLoadingStatus(bool loading) {
+    _loading = loading;
     notifyListeners();
   }
 }

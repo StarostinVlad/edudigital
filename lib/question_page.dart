@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:html';
+import 'dart:ui';
 import 'package:edudigital/ApiClient.dart';
 import 'package:edudigital/Models.dart';
 import 'package:edudigital/storage.dart';
@@ -38,6 +39,122 @@ class _TestScreenState extends State<TestScreen> {
                 Flexible(child: QuestionScreen()),
               ],
             ),
+    );
+  }
+}
+
+class SoftSkillsScreen extends StatefulWidget {
+  const SoftSkillsScreen({Key? key}) : super(key: key);
+
+  @override
+  _SoftSkillsScreenState createState() => _SoftSkillsScreenState();
+}
+
+class _SoftSkillsScreenState extends State<SoftSkillsScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: CustomAppBar(),
+      drawer: !MyApp.isDesktop(context)
+          ? Drawer(
+              child: Menu(),
+            )
+          : null,
+      body: !MyApp.isDesktop(context)
+          ? SoftSkills()
+          : Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(width: 200, child: Menu()),
+                Flexible(child: SoftSkills()),
+              ],
+            ),
+    );
+  }
+}
+
+class SoftSkills extends StatelessWidget {
+  const SoftSkills({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          color: Colors.deepPurple,
+          child: CustomText(
+            'SoftSkills',
+            fontSize: 32,
+            color: Colors.white,
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 50),
+          child: Text(
+            "Самооценка развития ключевых компетенций",
+            style: Theme.of(context).textTheme.headline5,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            Constants.softSkillBodyText,
+            style: Theme.of(context).textTheme.bodyText1,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        Align(
+          alignment: Alignment.bottomRight,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                child: MaterialButton(
+                  minWidth: 200,
+                  onPressed: (){},
+                  color: Colors.blueAccent,
+                  child: CustomText(
+                    'Описание\nкомпетенций',
+                    fontSize: 24,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                child: MaterialButton(
+                  minWidth: 200,
+                  onPressed: () {
+                    ApiClient().startSelfCheck().then((value) {
+                      context.read<Data>().refreshStartTime(value);
+                      ApiClient().getNextQuestion().then((questionData) {
+                        context.read<Data>().refreshQuestionData(questionData);
+                        Navigator.popAndPushNamed(context, RoutesName.testScreen);
+                      });
+                    }).onError((error, stackTrace) {
+                      if (error is TestIsAlredyStartedException)
+                        showDialog<String>(
+                            context: context,
+                            builder: (BuildContext context) =>
+                                AnotherTestAlreadyStartedDialog());
+                      else
+                        Navigator.popAndPushNamed(context, RoutesName.student);
+                    });
+                  },
+                  color: Colors.green,
+                  child: CustomText(
+                    'Начать\nсамооценку',
+                    fontSize: 24,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -29,42 +29,46 @@ class TeacherScreen extends StatelessWidget {
               child: TeacherMenu(),
             )
           : null,
-      body: SafeArea(
-        child: MyApp.isDesktop(context)
-            ? Row(
-                children: [
-                  Container(width: 200, child: TeacherMenu()),
-                  Flexible(
-                    child: Column(
+      body: context.watch<GroupData>().loading
+          ? Center(child: CircularProgressIndicator())
+          : SafeArea(
+              child: MyApp.isDesktop(context)
+                  ? Row(
                       children: [
-                        MaterialButton(
-                          onPressed: () {},
-                          minWidth: double.infinity,
-                          color: Colors.deepPurple,
-                          child: CustomText(
-                            'Инструкция к работе',
-                            fontSize: 32,
-                            color: Colors.white,
-                          ),
-                        ),
+                        Container(width: 200, child: TeacherMenu()),
                         Flexible(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Column(
                             children: [
-                              Flexible(child: TeacherContent()),
-                              Flexible(child: GroupsList()),
-                              Flexible(child: Greetings()),
+                              MaterialButton(
+                                onPressed: () {},
+                                minWidth: double.infinity,
+                                color: Colors.deepPurple,
+                                child: CustomText(
+                                  'Инструкция к работе',
+                                  fontSize: 32,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Flexible(
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Flexible(child: TeacherContent()),
+                                    Flexible(child: GroupsList()),
+                                    Flexible(child: Greetings()),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                ],
-              )
-            : ListView(children: [Greetings(), TeacherContent(), GroupsList()]),
-      ),
+                    )
+                  : ListView(
+                      children: [Greetings(), TeacherContent(), GroupsList()]),
+            ),
     );
   }
 }
@@ -478,7 +482,6 @@ class TeacherContent extends StatelessWidget {
       );
 
   memberList(List<User>? members) {
-    print(members);
     if (members == null) return CircularProgressIndicator();
     return ListView.builder(
       physics: ClampingScrollPhysics(),
@@ -611,7 +614,7 @@ class _AccessLevelState extends State<AccessLevel> {
           showDialog<String>(
               context: context,
               builder: (BuildContext context) =>
-                  AccessLevelDialog(widget.test.id));
+                  AccessLevelDialog(widget.test.id, widget.test.isAvailable));
         },
         child: Column(children: [
           Text(
@@ -630,8 +633,10 @@ class _AccessLevelState extends State<AccessLevel> {
 
 class AccessLevelDialog extends StatefulWidget {
   final String testId;
+  final bool isAvailable;
 
-  const AccessLevelDialog(this.testId, {Key? key}) : super(key: key);
+  const AccessLevelDialog(this.testId, this.isAvailable, {Key? key})
+      : super(key: key);
 
   @override
   _AccessLevelDialogState createState() => _AccessLevelDialogState();
@@ -641,7 +646,9 @@ class _AccessLevelDialogState extends State<AccessLevelDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Предоставить доступ к уровню?'),
+      title: widget.isAvailable
+          ? const Text('Удалить доступ к уровню?')
+          : const Text('Предоставить доступ к уровню?'),
       content: Form(
         child: Text(''),
       ),
@@ -654,16 +661,32 @@ class _AccessLevelDialogState extends State<AccessLevelDialog> {
           onPressed: () {
             var groupDetail =
                 Provider.of<GroupData>(context, listen: false).groupDetail;
-            ApiClient()
-                .makeTestAvailable(groupDetail?.id, widget.testId)
-                .then((value) {
-              ApiClient().getGroupAvailableTests(groupDetail!.id).then((value) {
-                context.read<GroupData>().refreshLevelsData(value);
-                Navigator.pop(context, 'OK');
+            if (widget.isAvailable)
+              ApiClient()
+                  .makeTestUnAvailable(groupDetail?.id, widget.testId)
+                  .then((value) {
+                ApiClient()
+                    .getGroupAvailableTests(groupDetail!.id)
+                    .then((value) {
+                  context.read<GroupData>().refreshLevelsData(value);
+                  Navigator.pop(context, 'OK');
+                });
               });
-            });
+            else
+              ApiClient()
+                  .makeTestAvailable(groupDetail?.id, widget.testId)
+                  .then((value) {
+                ApiClient()
+                    .getGroupAvailableTests(groupDetail!.id)
+                    .then((value) {
+                  context.read<GroupData>().refreshLevelsData(value);
+                  Navigator.pop(context, 'OK');
+                });
+              });
           },
-          child: const Text('Предоставить'),
+          child: widget.isAvailable
+              ? const Text('Удалить')
+              : const Text('Предоставить'),
         ),
       ],
     );
@@ -757,21 +780,25 @@ class TeacherStatistic extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.0),
-      child: Column(
-        children: [
-          Flexible(child: Statistic()),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: MaterialButton(
-                color: Theme.of(context).accentColor,
-                child: CustomText('Дать рекомендации студентам'),
-                onPressed: () {
-                  showDialog<String>(
-                      context: context,
-                      builder: (BuildContext context) => RecomendationDialog());
-                }),
-          )
-        ],
+      child: Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Flexible(child: Statistic()),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: MaterialButton(
+                  color: Theme.of(context).accentColor,
+                  child: CustomText('Дать рекомендации студентам'),
+                  onPressed: () {
+                    showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) =>
+                            RecomendationDialog());
+                  }),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -796,13 +823,7 @@ class Statistic extends StatelessWidget {
 
         var statistic = snapshot.data;
         if (statistic == null) return Text("Статистика отсутствует");
-        return ListView(
-          physics: ClampingScrollPhysics(),
-          children: statistic.map((e) {
-            print("statistic item:$e");
-            return StatisticItem(e);
-          }).toList(),
-        );
+        return StatisticTable(statistic);
       },
     );
   }
@@ -1009,7 +1030,12 @@ class _TeacherMenuState extends State<TeacherMenu> {
                     padding: EdgeInsets.only(top: 20.0),
                     child: Center(
                       // child: CustomText("Мой профиль"),
-                      child: CustomText(option1Text),
+                      child: MaterialButton(
+                          onPressed: () {
+                            Navigator.popAndPushNamed(
+                                context, RoutesName.teacher);
+                          },
+                          child: CustomText(option1Text)),
                     ),
                   ),
                   ProfileAvatar(),
@@ -1067,18 +1093,8 @@ class _TeacherMenuState extends State<TeacherMenu> {
               Expanded(
                 child: MaterialButton(
                   onPressed: () {
-                    ApiClient()
-                        .getGroupDetail(groups[index].id)
-                        .then((groupDetail) {
-                      context
-                          .read<GroupData>()
-                          .refreshGroupDetailData(groupDetail);
-                    });
-                    ApiClient()
-                        .getGroupAvailableTests(groups[index].id)
-                        .then((levels) {
-                      context.read<GroupData>().refreshLevelsData(levels);
-                    });
+                    Navigator.popAndPushNamed(context, RoutesName.teacher,
+                        arguments: groups[index].id);
                   },
                   child: ListTile(
                     title: CustomText(
@@ -1191,156 +1207,6 @@ class CommentsWidget extends StatelessWidget {
                       })),
         );
       },
-    );
-  }
-}
-
-class StatisticItem extends StatelessWidget {
-  final StudentResult statistic;
-
-  const StatisticItem(this.statistic, {Key? key}) : super(key: key);
-
-  row(BuildContext context, Groups groups) {
-    return [
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            groups.name,
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            groups.base != null ? "${groups.base! * 100}%" : "",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            groups.advanced != null ? "${groups.advanced! * 100}%" : "",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            groups.professional != null ? "${groups.professional! * 100}%" : "",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "${groups.total! * 100}",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-    ];
-  }
-
-  List<Widget> header(BuildContext context) {
-    return [
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Компетенции",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Базовый",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Продвинутый",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Профессиональный",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Итого",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var rows = statistic.groups
-        .map((element) => TableRow(children: row(context, element)))
-        .toList();
-    rows.insert(0, TableRow(children: header(context)));
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            "${statistic.name}",
-            style: Theme.of(context).textTheme.headline5,
-          ),
-        ),
-        Table(
-            border: TableBorder.symmetric(
-                inside: BorderSide(color: Colors.black, width: 2),
-                outside: BorderSide(color: Colors.black, width: 2)),
-            children: rows),
-      ],
     );
   }
 }

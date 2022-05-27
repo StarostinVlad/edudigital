@@ -24,7 +24,11 @@ class Menu extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.only(top: 20.0),
                 child: Center(
-                  child: CustomText('Профиль'),
+                  child: MaterialButton(
+                      onPressed: () {
+                        Navigator.popAndPushNamed(context, RoutesName.student);
+                      },
+                      child: CustomText('Профиль')),
                 ),
               ),
               ProfileAvatar(),
@@ -142,27 +146,23 @@ class EduProgressIndicator extends StatelessWidget {
           : null,
       child: ListTile(
           leading: getStatus(test.available, isCompleted),
-          // Icon(
-          //     isCompleted ? Icons.done : Icons.clear,
-          //     color: isCompleted ? Colors.green : Colors.red,
-          //   ),
           title: LinearProgressIndicator(
             backgroundColor: Colors.grey,
             minHeight: 15,
             valueColor: AlwaysStoppedAnimation<Color>(checkColor(progress)),
-            value: progress,
+            value: progress / 100,
           ),
           subtitle: Text("${test.groupName} : ${test.name}"),
-          trailing: Text('${progress * 100}%')),
+          trailing: Text('${progress}%')),
     );
   }
 
   Color checkColor(double progress) {
-    if (progress <= 0.56)
+    if (progress <= 56)
       return Colors.red;
-    else if (progress > 0.56 && progress <= 0.86)
+    else if (progress > 56 && progress <= 86)
       return Colors.yellow;
-    else if (progress > 0.86)
+    else if (progress > 86)
       return Colors.green;
     else
       return Colors.grey;
@@ -305,21 +305,7 @@ class SoftSkillBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialButton(
       onPressed: () {
-        ApiClient().startSelfCheck().then((value) {
-          context.read<Data>().refreshStartTime(value);
-          ApiClient().getNextQuestion().then((questionData) {
-            context.read<Data>().refreshQuestionData(questionData);
-            Navigator.popAndPushNamed(context, RoutesName.testScreen);
-          });
-        }).onError((error, stackTrace) {
-          if (error is TestIsAlredyStartedException)
-            showDialog<String>(
-                context: context,
-                builder: (BuildContext context) =>
-                    AnotherTestAlreadyStartedDialog());
-          else
-            Navigator.popAndPushNamed(context, RoutesName.student);
-        });
+        Navigator.popAndPushNamed(context, RoutesName.softSkills);
       },
       minWidth: double.infinity,
       color: Colors.deepPurple,
@@ -388,166 +374,7 @@ class StudentStatisticItem extends StatelessWidget {
       return Center(
         child: Text("Статистика отсутствует"),
       );
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 5.0),
-      child: ListView(
-        shrinkWrap: false,
-        children: statistic.map((e) {
-          print("statistic item:$e");
-          return StatisticItem(e);
-        }).toList(),
-      ),
-    );
-  }
-}
-
-class StatisticItem extends StatelessWidget {
-  final StudentResult statistic;
-
-  const StatisticItem(this.statistic, {Key? key}) : super(key: key);
-
-  row(BuildContext context, Groups groups) {
-    return [
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            groups.name,
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            groups.base != null ? "${groups.base! * 100}%" : "",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            groups.advanced != null ? "${groups.advanced! * 100}%" : "",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            groups.professional != null ? "${groups.professional! * 100}%" : "",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "${groups.total! * 100}",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-    ];
-  }
-
-  List<Widget> header(BuildContext context) {
-    return [
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Компетенции",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Базовый",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Продвинутый",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Профессиональный",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-      TableCell(
-        verticalAlignment: TableCellVerticalAlignment.middle,
-        child: SizedBox(
-          height: 50,
-          child: Text(
-            "Итого",
-            textAlign: ui.TextAlign.center,
-            style: Theme.of(context).textTheme.headline6,
-          ),
-        ),
-      ),
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    var rows = statistic.groups
-        .map((element) => TableRow(children: row(context, element)))
-        .toList();
-    rows.insert(0, TableRow(children: header(context)));
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text(
-            "${statistic.name}",
-            style: Theme.of(context).textTheme.headline5,
-          ),
-        ),
-        Table(
-            border: TableBorder.symmetric(
-                inside: BorderSide(color: Colors.black, width: 2),
-                outside: BorderSide(color: Colors.black, width: 2)),
-            children: rows),
-      ],
-    );
+    return StatisticTable(statistic);
   }
 }
 

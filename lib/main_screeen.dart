@@ -23,15 +23,7 @@ class _MainScreenState extends State<MainScreen> {
           Navigator.popAndPushNamed(context, RoutesName.student);
           break;
         case 'teacher':
-          // UserAgentClient().getGroups().then((value) {
-          //   context.read<GroupData>().refreshGroupsData(value);
-          //   UserAgentClient()
-          //       .getGroupDetail("9ef9db61-0f46-42c3-a1c1-2c94c304cbcc")
-          //       .then((groupDetail) {
-          //     context.read<GroupData>().refreshGroupDetailData(groupDetail);
-              Navigator.popAndPushNamed(context, RoutesName.teacher);
-          //   });
-          // });
+          Navigator.popAndPushNamed(context, RoutesName.teacher);
           break;
         case 'admin':
           Navigator.popAndPushNamed(context, RoutesName.teacher);
