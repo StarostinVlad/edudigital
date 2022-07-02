@@ -210,14 +210,15 @@ class LevelTeacher {
 class TestTeacherData {
   final String id;
   final bool isAvailable;
-  final String name;
+  final String name,groupName;
 
-  TestTeacherData(this.id, this.isAvailable, this.name);
+  TestTeacherData(this.id, this.isAvailable, this.name, this.groupName);
 
   TestTeacherData.fromJson(Map<String, dynamic> json)
       : isAvailable = json['is_available'],
         id = json['id'],
-        name = json['name'];
+        name = json['name'],
+        groupName = json['group_name'];
 }
 
 class GroupDetail {

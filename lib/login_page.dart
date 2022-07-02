@@ -65,7 +65,7 @@ class LoginScreen extends StatelessWidget {
                                 child: Column(
                                   children: [
                                     Text(
-                                        'Проект разработан при поддержки Фонда содействия инновациям'),
+                                        'Проект разработан при поддержке Фонда содействия инновациям'),
                                     Container(
                                         height: 50.0,
                                         child: Image.asset('assets/found1.png'))
@@ -152,12 +152,12 @@ class TextOnLoginPage extends StatelessWidget {
                 fontSize: 48),
           ),
           Text(
-            'Онлайн-платформа для оценки и',
+            'Онлайн-платформа для оценки',
             style:
                 TextStyle(color: Theme.of(context).primaryColor, fontSize: 16),
           ),
           Text(
-            'развития цифровой компетентности студентов педагогических направлений',
+            'цифровых компетенций будущих и действующих учителей',
             style:
                 TextStyle(color: Theme.of(context).primaryColor, fontSize: 16),
           ),

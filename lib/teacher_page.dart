@@ -618,7 +618,7 @@ class _AccessLevelState extends State<AccessLevel> {
         },
         child: Column(children: [
           Text(
-            widget.test.name,
+            "${widget.test.groupName} : ${widget.test.name}",
             style: TextStyle(color: Colors.white),
           ),
           Text(
