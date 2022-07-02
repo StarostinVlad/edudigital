@@ -254,7 +254,6 @@ class _LoginFormState extends State<LoginForm> {
           padding: EdgeInsets.symmetric(vertical: 10.0),
           child: TextFormField(
             enabled: _enabled,
-            initialValue: 'user3_email@mail.ru',
             onSaved: (input) => _login = input,
             validator: (value) {
               if (value == null || value.isEmpty || !value.isValidEmail()) {
@@ -278,7 +277,6 @@ class _LoginFormState extends State<LoginForm> {
           padding: EdgeInsets.symmetric(vertical: 10.0),
           child: TextFormField(
             enabled: _enabled,
-            initialValue: 'Aa111111',
             onSaved: (input) => _password = input,
             obscureText: _isObscure,
             enableSuggestions: false,
