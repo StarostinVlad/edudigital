@@ -537,25 +537,26 @@ class GroupsList extends StatelessWidget {
   @override
   Widget build(context) => Padding(
         padding: EdgeInsets.all(5.0),
-        child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              context.watch<GroupData>().groupDetail!.name,
-              style: Theme.of(context).textTheme.headline5,
-            ),
-          ),
-          ListView(
+        child: ListView(
             physics: ClampingScrollPhysics(),
             shrinkWrap: true,
-            children: levelList(context.watch<GroupData>().levels),
-          )
-        ]),
+            children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    context.watch<GroupData>().groupDetail!.name,
+                    style: Theme.of(context).textTheme.headline5,
+                  ),
+                ),
+              ),
+              levelList(context.watch<GroupData>().levels),
+            ]),
       );
 }
 
 levelList(List<LevelTeacher> levels) {
-  return levels.map((level) => Level(level)).toList();
+  return Column(children: levels.map((level) => Level(level)).toList());
 }
 
 class Level extends StatelessWidget {
@@ -566,9 +567,7 @@ class Level extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        child: ListView(
-      physics: ClampingScrollPhysics(),
-      shrinkWrap: true,
+        child: Column(
       children: [
         CustomText(
           level.levelName,
